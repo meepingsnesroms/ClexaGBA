@@ -1,5 +1,7 @@
+*.d
 *.o
 *.a
 *.elf
+*.map
 *.gba
 *.sav
