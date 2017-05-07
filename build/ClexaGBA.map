@@ -1,0 +1,744 @@
+Archive member included to satisfy reference by file (symbol)
+
+/Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+                              main.o (irqInit)
+/Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+                              /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o) (IntrMain)
+/Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a(lib_a-init.o)
+                              /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o (__libc_init_array)
+/Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+                              /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o (fake_heap_end)
+
+Allocating common symbols
+Common symbol       size              file
+
+IntrTable           0x78              /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+
+Discarded input sections
+
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crti.o
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crti.o
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crti.o
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .data.__dso_handle
+                0x0000000000000000        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .text          0x0000000000000000        0x0 main.o
+ .data          0x0000000000000000        0x0 main.o
+ .bss           0x0000000000000000        0x0 main.o
+ .data          0x0000000000000000        0x0 runloop.o
+ .data          0x0000000000000000        0x0 ugui.o
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a(lib_a-init.o)
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a(lib_a-init.o)
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a(lib_a-init.o)
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+ .bss.fake_heap_start
+                0x0000000000000000        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+ .text          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtn.o
+ .data          0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtn.o
+ .bss           0x0000000000000000        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtn.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+rom              0x0000000008000000 0x0000000002000000
+iwram            0x0000000003000000 0x0000000000008000
+ewram            0x0000000002000000 0x0000000000040000
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000008000000                __text_start = ORIGIN (rom)
+                0x0000000002040000                __eheap_end = (ORIGIN (ewram) + LENGTH (ewram))
+                0x0000000003000000                __iwram_start = ORIGIN (iwram)
+                0x0000000003008000                __iwram_top = (ORIGIN (iwram) + LENGTH (iwram))
+                0x0000000003007fa0                __sp_irq = (__iwram_top - 0x60)
+                0x0000000003007f00                __sp_usr = (__sp_irq - 0xa0)
+                0x0000000003007ff8                __irq_flags = 0x3007ff8
+                0x0000000008000000                . = __text_start
+
+.crt0           0x0000000008000000      0x210
+ *(.crt0)
+ .crt0          0x0000000008000000      0x210 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+                0x0000000008000000                _start
+                0x00000000080000c4                __boot_method
+                0x00000000080000c5                __slave_number
+                0x00000000080000e0                start_vector
+                0x0000000008000210                . = ALIGN (0x4)
+
+.init           0x0000000008000210        0xc
+ *(SORT(.init))
+ .init          0x0000000008000210        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crti.o
+                0x0000000008000210                _init
+ .init          0x0000000008000214        0x8 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtn.o
+
+.plt            0x000000000800021c        0x0
+ *(.plt)
+                0x000000000800021c                . = ALIGN (0x4)
+
+.text           0x000000000800021c     0x678c
+ *(EXCLUDE_FILE(*.iwram*) .text)
+ .text          0x000000000800021c       0xa4 menu.o
+                0x000000000800024c                init_menu()
+                0x00000000080002a8                draw_menu()
+ .text          0x00000000080002c0       0x18 runloop.o
+                0x00000000080002c0                run_frame()
+ .text          0x00000000080002d8     0x61bc ugui.o
+                0x0000000008000654                _UG_ImageUpdate
+                0x0000000008000858                UG_Init
+                0x00000000080008d4                UG_SelectGUI
+                0x00000000080008e0                UG_CurrentGUI
+                0x00000000080008ec                UG_FontSelect
+                0x0000000008000908                UG_FillScreen
+                0x00000000080009a0                UG_FillFrame
+                0x0000000008000a30                UG_DrawMesh
+                0x0000000008000aac                UG_DrawPixel
+                0x0000000008000ac4                UG_DrawCircle
+                0x0000000008000adc                UG_DrawArc
+                0x0000000008000b00                UG_DrawLine
+                0x0000000008000c6c                UG_FillRoundFrame
+                0x0000000008000e80                UG_DrawFrame
+                0x0000000008000ed4                UG_DrawRoundFrame
+                0x000000000800115c                UG_FillCircle
+                0x000000000800129c                UG_ConsoleSetArea
+                0x00000000080012c0                UG_ConsoleSetForecolor
+                0x00000000080012cc                UG_ConsoleSetBackcolor
+                0x00000000080012d8                UG_SetForecolor
+                0x00000000080012e8                UG_SetBackcolor
+                0x00000000080012f8                UG_GetXDim
+                0x0000000008001308                UG_GetYDim
+                0x0000000008001318                UG_FontSetHSpace
+                0x0000000008001328                UG_FontSetVSpace
+                0x0000000008001338                _UG_PutChar
+                0x0000000008001808                UG_PutChar
+                0x000000000800182c                UG_PutString
+                0x00000000080018dc                UG_ConsolePutString
+                0x0000000008001a50                _UG_PutText
+                0x0000000008001c24                _UG_TextboxUpdate
+                0x0000000008001ea8                _UG_GetFreeObject
+                0x0000000008001ee8                _UG_SearchObject
+                0x0000000008001f28                _UG_DeleteObject
+                0x0000000008001f80                _UG_ProcessTouchData
+                0x00000000080020a0                _UG_UpdateObjects
+                0x0000000008002130                _UG_HandleEvents
+                0x00000000080021b8                _UG_DrawObjectFrame
+                0x000000000800230c                _UG_ButtonUpdate
+                0x00000000080026e0                _UG_CheckboxUpdate
+                0x0000000008002d84                _UG_SendObjectPrerenderEvent
+                0x0000000008002da8                _UG_SendObjectPostrenderEvent
+                0x0000000008002dd0                UG_DriverRegister
+                0x0000000008002dec                UG_DriverEnable
+                0x0000000008002e0c                UG_DriverDisable
+                0x0000000008002e2c                UG_WaitForUpdate
+                0x0000000008002e40                UG_DrawBMP
+                0x0000000008002ed4                UG_TouchUpdate
+                0x0000000008002ee4                UG_WindowCreate
+                0x0000000008002f78                UG_WindowDelete
+                0x0000000008002fb0                UG_WindowShow
+                0x0000000008002fd4                UG_WindowHide
+                0x00000000080031cc                UG_WindowResize
+                0x0000000008003510                UG_WindowAlert
+                0x0000000008003534                UG_WindowSetForeColor
+                0x0000000008003550                UG_WindowSetBackColor
+                0x000000000800356c                UG_WindowSetTitleTextColor
+                0x0000000008003588                UG_WindowSetTitleColor
+                0x00000000080035a4                UG_WindowSetTitleInactiveTextColor
+                0x00000000080035c0                UG_WindowSetTitleInactiveColor
+                0x00000000080035dc                UG_WindowSetTitleText
+                0x00000000080035f8                UG_WindowSetTitleTextFont
+                0x0000000008003638                UG_WindowSetTitleTextHSpace
+                0x0000000008003658                UG_WindowSetTitleTextVSpace
+                0x0000000008003678                UG_WindowSetTitleTextAlignment
+                0x0000000008003698                UG_WindowSetTitleHeight
+                0x00000000080036bc                UG_WindowSetXStart
+                0x00000000080039f4                UG_WindowSetYStart
+                0x0000000008003d28                UG_WindowSetXEnd
+                0x0000000008004060                UG_WindowSetYEnd
+                0x0000000008004398                UG_WindowSetStyle
+                0x00000000080043e4                UG_WindowGetForeColor
+                0x00000000080043f8                UG_WindowGetBackColor
+                0x000000000800440c                UG_WindowGetTitleTextColor
+                0x0000000008004420                UG_WindowGetTitleColor
+                0x0000000008004434                UG_WindowGetTitleInactiveTextColor
+                0x0000000008004448                UG_WindowGetTitleInactiveColor
+                0x000000000800445c                UG_WindowGetTitleText
+                0x0000000008004470                UG_WindowGetTitleTextFont
+                0x0000000008004484                UG_WindowGetTitleTextHSpace
+                0x000000000800449c                UG_WindowGetTitleTextVSpace
+                0x00000000080044b4                UG_WindowGetTitleTextAlignment
+                0x00000000080044cc                UG_WindowGetTitleHeight
+                0x00000000080044e4                UG_WindowGetXStart
+                0x00000000080044fc                UG_WindowGetYStart
+                0x0000000008004514                UG_WindowGetXEnd
+                0x000000000800452c                UG_WindowGetYEnd
+                0x0000000008004544                UG_WindowGetStyle
+                0x0000000008004558                UG_WindowGetArea
+                0x00000000080045b4                UG_WindowGetInnerWidth
+                0x00000000080045ec                UG_WindowGetOuterWidth
+                0x0000000008004614                UG_WindowGetInnerHeight
+                0x000000000800465c                UG_WindowGetOuterHeight
+                0x0000000008004684                _UG_WindowDrawTitle
+                0x0000000008004840                _UG_WindowUpdate
+                0x0000000008004a3c                UG_Update
+                0x0000000008004bd0                _UG_WindowClear
+                0x0000000008004cbc                UG_ButtonCreate
+                0x0000000008004db0                UG_ButtonDelete
+                0x0000000008004e08                UG_ButtonShow
+                0x0000000008004e50                UG_ButtonHide
+                0x0000000008004eac                UG_ButtonSetForeColor
+                0x0000000008004ef8                UG_ButtonSetBackColor
+                0x0000000008004f44                UG_ButtonSetAlternateForeColor
+                0x0000000008004f90                UG_ButtonSetAlternateBackColor
+                0x0000000008004fdc                UG_ButtonSetText
+                0x0000000008005028                UG_ButtonSetFont
+                0x0000000008005074                UG_ButtonSetStyle
+                0x0000000008005118                UG_ButtonSetHSpace
+                0x0000000008005164                UG_ButtonSetVSpace
+                0x00000000080051b0                UG_ButtonSetAlignment
+                0x00000000080051fc                UG_ButtonGetForeColor
+                0x000000000800523c                UG_ButtonGetBackColor
+                0x000000000800527c                UG_ButtonGetAlternateForeColor
+                0x00000000080052bc                UG_ButtonGetAlternateBackColor
+                0x00000000080052fc                UG_ButtonGetText
+                0x000000000800533c                UG_ButtonGetFont
+                0x000000000800537c                UG_ButtonGetStyle
+                0x00000000080053bc                UG_ButtonGetHSpace
+                0x0000000008005400                UG_ButtonGetVSpace
+                0x0000000008005444                UG_ButtonGetAlignment
+                0x0000000008005484                UG_CheckboxCreate
+                0x000000000800557c                UG_CheckboxDelete
+                0x00000000080055d4                UG_CheckboxShow
+                0x000000000800561c                UG_CheckboxHide
+                0x0000000008005678                UG_CheckboxSetCheched
+                0x00000000080056c4                UG_CheckboxSetForeColor
+                0x0000000008005710                UG_CheckboxSetBackColor
+                0x000000000800575c                UG_CheckboxSetAlternateForeColor
+                0x00000000080057a8                UG_CheckboxSetAlternateBackColor
+                0x00000000080057f4                UG_CheckboxSetText
+                0x0000000008005840                UG_CheckboxSetFont
+                0x000000000800588c                UG_CheckboxSetStyle
+                0x0000000008005930                UG_CheckboxSetHSpace
+                0x000000000800597c                UG_CheckboxSetVSpace
+                0x00000000080059c8                UG_CheckboxSetAlignment
+                0x0000000008005a14                UG_CheckboxGetChecked
+                0x0000000008005a54                UG_CheckboxGetForeColor
+                0x0000000008005a94                UG_CheckboxGetBackColor
+                0x0000000008005ad4                UG_CheckboxGetAlternateForeColor
+                0x0000000008005b14                UG_CheckboxGetAlternateBackColor
+                0x0000000008005b54                UG_CheckboxGetText
+                0x0000000008005b94                UG_CheckboxGetFont
+                0x0000000008005bd4                UG_CheckboxGetStyle
+                0x0000000008005c14                UG_CheckboxGetHSpace
+                0x0000000008005c58                UG_CheckboxGetVSpace
+                0x0000000008005c9c                UG_CheckboxGetAlignment
+                0x0000000008005cdc                UG_TextboxCreate
+                0x0000000008005dc8                UG_TextboxDelete
+                0x0000000008005e20                UG_TextboxShow
+                0x0000000008005e68                UG_TextboxHide
+                0x0000000008005eb4                UG_TextboxSetForeColor
+                0x0000000008005f00                UG_TextboxSetBackColor
+                0x0000000008005f4c                UG_TextboxSetText
+                0x0000000008005f98                UG_TextboxSetFont
+                0x0000000008005fe4                UG_TextboxSetHSpace
+                0x0000000008006030                UG_TextboxSetVSpace
+                0x000000000800607c                UG_TextboxSetAlignment
+                0x00000000080060c8                UG_TextboxGetForeColor
+                0x0000000008006108                UG_TextboxGetBackColor
+                0x0000000008006148                UG_TextboxGetText
+                0x0000000008006188                UG_TextboxGetFont
+                0x00000000080061c8                UG_TextboxGetHSpace
+                0x000000000800620c                UG_TextboxGetVSpace
+                0x0000000008006250                UG_TextboxGetAlignment
+                0x0000000008006290                UG_ImageCreate
+                0x000000000800634c                UG_ImageDelete
+                0x00000000080063a4                UG_ImageShow
+                0x00000000080063ec                UG_ImageHide
+                0x0000000008006438                UG_ImageSetBMP
+ .text          0x0000000008006494      0x3bc /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+                0x0000000008006494                dummy
+                0x0000000008006498                InitInterrupt
+                0x00000000080064f4                irqInit
+                0x0000000008006550                SetInterrupt
+                0x0000000008006634                irqSet
+                0x0000000008006718                EnableInterrupt
+                0x0000000008006764                irqEnable
+                0x00000000080067b8                DisableInterrupt
+                0x0000000008006804                irqDisable
+ *(.text .stub .text.* .gnu.linkonce.t.*)
+ .text.deregister_tm_clones
+                0x0000000008006850       0x30 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .text.register_tm_clones
+                0x0000000008006880       0x34 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .text.__do_global_dtors_aux
+                0x00000000080068b4       0x30 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .text.frame_dummy
+                0x00000000080068e4       0x48 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .text.startup  0x000000000800692c       0x24 main.o
+                0x000000000800692c                main
+ .text.__libc_init_array
+                0x0000000008006950       0x58 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a(lib_a-init.o)
+                0x0000000008006950                __libc_init_array
+ *(.text.*personality*)
+ *(.gnu.warning)
+ *(.glue_7t)
+ .glue_7t       0x00000000080069a8        0x0 linker stubs
+ *(.glue_7)
+ .glue_7        0x00000000080069a8        0x0 linker stubs
+ *(.vfp11_veneer)
+ .vfp11_veneer  0x00000000080069a8        0x0 linker stubs
+                0x00000000080069a8                . = ALIGN (0x4)
+                0x00000000080069a8                __text_end = .
+
+.v4_bx          0x00000000080069a8        0x0
+ .v4_bx         0x00000000080069a8        0x0 linker stubs
+
+.iplt           0x00000000080069a8        0x0
+ .iplt          0x00000000080069a8        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+
+.fini           0x00000000080069a8        0xc
+ *(.fini)
+ .fini          0x00000000080069a8        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crti.o
+                0x00000000080069a8                _fini
+ .fini          0x00000000080069ac        0x8 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtn.o
+                0x00000000080069b4                . = ALIGN (0x4)
+
+.rodata         0x00000000080069b4      0x7cc
+ *(.rodata)
+ .rodata        0x00000000080069b4      0x7c0 ugui.o
+                0x0000000008006ae8                pal_button_pressed
+                0x0000000008006b00                pal_button_released
+                0x0000000008006b18                pal_checkbox_pressed
+                0x0000000008006b30                pal_checkbox_released
+                0x0000000008006b48                pal_window
+                0x0000000008006b60                FONT_4X6
+                0x0000000008006b74                font_4x6
+ *all.rodata*(*)
+ *(.roda)
+ *(.rodata.*)
+ .rodata.str1.4
+                0x0000000008007174        0x6 menu.o
+ *fill*         0x000000000800717a        0x2 ff
+ .rodata.str1.4
+                0x000000000800717c        0x4 ugui.o
+                                          0x2 (size before relaxing)
+ *(.gnu.linkonce.r*)
+                0x0000000008007180                . = ALIGN (0x4)
+
+.ARM.extab
+ *(.ARM.extab* .gnu.linkonce.armextab.*)
+                0x0000000008007180                __exidx_start = .
+
+.ARM.exidx
+ *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+                0x0000000008007180                __exidx_end = .
+
+.ctors          0x0000000008007180        0x0
+ *crtbegin.o(.ctors)
+ *(EXCLUDE_FILE(*crtend.o) .ctors)
+ *(SORT(.ctors.*))
+ *(.ctors)
+                0x0000000008007180                . = ALIGN (0x4)
+
+.dtors          0x0000000008007180        0x0
+ *crtbegin.o(.dtors)
+ *(EXCLUDE_FILE(*crtend.o) .dtors)
+ *(SORT(.dtors.*))
+ *(.dtors)
+                0x0000000008007180                . = ALIGN (0x4)
+
+.eh_frame       0x0000000008007180        0x4
+ *(.eh_frame)
+ .eh_frame      0x0000000008007180        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .eh_frame      0x0000000008007180        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+                0x0000000008007184                . = ALIGN (0x4)
+
+.gcc_except_table
+                0x0000000008007184        0x0
+ *(.gcc_except_table)
+                0x0000000008007184                . = ALIGN (0x4)
+                0x0000000008007184                __iwram_lma = .
+
+.iwram          0x0000000003000000       0xb8 load address 0x0000000008007184
+                0x0000000003000000                __iwram_start__ = ABSOLUTE (.)
+ *(.iwram)
+ .iwram         0x0000000003000000       0xb8 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+                0x0000000003000000                IntrMain
+ *iwram.*(.text)
+                0x00000000030000b8                . = ALIGN (0x4)
+                0x00000000030000b8                __iwram_end__ = ABSOLUTE (.)
+                0x000000000800723c                __data_lma = (__iwram_lma + SIZEOF (.iwram))
+
+.rel.dyn        0x00000000030000b8        0x0 load address 0x000000000800723c
+ .rel.iplt      0x00000000030000b8        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+
+.bss            0x00000000030000b8      0x780
+                0x00000000030000b8                __bss_start = ABSOLUTE (.)
+                0x00000000030000b8                __bss_start__ = ABSOLUTE (.)
+ *(.dynbss)
+ *(.gnu.linkonce.b*)
+ *(.bss*)
+ .bss.completed.6497
+                0x00000000030000b8        0x1 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ *fill*         0x00000000030000b9        0x3 
+ .bss.object.6502
+                0x00000000030000bc       0x18 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .bss           0x00000000030000d4      0x6d8 menu.o
+                0x00000000030000d4                renderer
+                0x0000000003000138                render_objects
+                0x0000000003000778                render_window
+ .bss           0x00000000030007ac        0x1 runloop.o
+                0x00000000030007ac                in_game
+ *fill*         0x00000000030007ad        0x3 
+ .bss           0x00000000030007b0        0xc ugui.o
+ .bss.fake_heap_end
+                0x00000000030007bc        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+                0x00000000030007bc                fake_heap_end
+ *(COMMON)
+ COMMON         0x00000000030007c0       0x78 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+                0x00000000030007c0                IntrTable
+                0x0000000003000838                . = ALIGN (0x4)
+                0x0000000003000838                __bss_end__ = ABSOLUTE (.)
+
+.data           0x0000000003000838        0x4 load address 0x000000000800723c
+                0x0000000003000838                __data_start__ = ABSOLUTE (.)
+ *(.data)
+ .data          0x0000000003000838        0x4 menu.o
+                0x0000000003000838                vram
+ *(.data.*)
+ *(.gnu.linkonce.d*)
+                0x000000000300083c                . = ALIGN (0x4)
+                0x0000000008007240                __preinit_lma = (__data_lma + SIZEOF (.data))
+
+.igot.plt       0x000000000300083c        0x0 load address 0x0000000008007240
+ .igot.plt      0x000000000300083c        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+
+.tm_clone_table
+                0x000000000300083c        0x0 load address 0x0000000008007240
+ .tm_clone_table
+                0x000000000300083c        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .tm_clone_table
+                0x000000000300083c        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+
+.preinit_array  0x000000000300083c        0x0 load address 0x0000000008007240
+                0x000000000300083c                __preinit_array_start = ABSOLUTE (.)
+ *(.preinit_array)
+                0x000000000300083c                __preinit_array_end = ABSOLUTE (.)
+                0x0000000008007240                __init_lma = (__preinit_lma + SIZEOF (.preinit_array))
+
+.init_array     0x000000000300083c        0x4 load address 0x0000000008007240
+                0x000000000300083c                __init_array_start = ABSOLUTE (.)
+ *(SORT(.init_array.*))
+ *(.init_array)
+ .init_array    0x000000000300083c        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+                0x0000000003000840                __init_array_end = ABSOLUTE (.)
+                0x0000000008007244                __fini_lma = (__init_lma + SIZEOF (.init_array))
+
+.fini_array     0x0000000003000840        0x4 load address 0x0000000008007244
+                0x0000000003000840                __fini_array_start = ABSOLUTE (.)
+ *(SORT(.fini_array.*))
+ *(.fini_array)
+ .fini_array    0x0000000003000840        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+                0x0000000003000844                __fini_array_end = ABSOLUTE (.)
+                0x0000000008007248                __jcr_lma = (__fini_lma + SIZEOF (.fini_array))
+
+.jcr            0x0000000003000844        0x4 load address 0x0000000008007248
+ *(.jcr)
+ .jcr           0x0000000003000844        0x0 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .jcr           0x0000000003000844        0x4 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+                0x0000000003000848                __data_end__ = ABSOLUTE (.)
+                0x000000000800724c                __iwram_overlay_lma = (__jcr_lma + SIZEOF (.jcr))
+                0x0000000003000848                __iwram_overlay_start = .
+
+.iwram0         0x0000000003000848        0x0 load address 0x000000000800724c
+ *(.iwram0)
+                0x0000000003000848                . = ALIGN (0x4)
+                0x000000000800724c                PROVIDE (__load_start_iwram0, LOADADDR (.iwram0))
+                0x000000000800724c                PROVIDE (__load_stop_iwram0, (LOADADDR (.iwram0) + SIZEOF (.iwram0)))
+
+.iwram1         0x0000000003000848        0x0
+ *(.iwram1)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram1, LOADADDR (.iwram1))
+                [!provide]                        PROVIDE (__load_stop_iwram1, (LOADADDR (.iwram1) + SIZEOF (.iwram1)))
+
+.iwram2         0x0000000003000848        0x0
+ *(.iwram2)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram2, LOADADDR (.iwram2))
+                [!provide]                        PROVIDE (__load_stop_iwram2, (LOADADDR (.iwram2) + SIZEOF (.iwram2)))
+
+.iwram3         0x0000000003000848        0x0
+ *(.iwram3)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram3, LOADADDR (.iwram3))
+                [!provide]                        PROVIDE (__load_stop_iwram3, (LOADADDR (.iwram3) + SIZEOF (.iwram3)))
+
+.iwram4         0x0000000003000848        0x0
+ *(.iwram4)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram4, LOADADDR (.iwram4))
+                [!provide]                        PROVIDE (__load_stop_iwram4, (LOADADDR (.iwram4) + SIZEOF (.iwram4)))
+
+.iwram5         0x0000000003000848        0x0
+ *(.iwram5)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram5, LOADADDR (.iwram5))
+                [!provide]                        PROVIDE (__load_stop_iwram5, (LOADADDR (.iwram5) + SIZEOF (.iwram5)))
+
+.iwram6         0x0000000003000848        0x0
+ *(.iwram6)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram6, LOADADDR (.iwram6))
+                [!provide]                        PROVIDE (__load_stop_iwram6, (LOADADDR (.iwram6) + SIZEOF (.iwram6)))
+
+.iwram7         0x0000000003000848        0x0
+ *(.iwram7)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram7, LOADADDR (.iwram7))
+                [!provide]                        PROVIDE (__load_stop_iwram7, (LOADADDR (.iwram7) + SIZEOF (.iwram7)))
+
+.iwram8         0x0000000003000848        0x0
+ *(.iwram8)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram8, LOADADDR (.iwram8))
+                [!provide]                        PROVIDE (__load_stop_iwram8, (LOADADDR (.iwram8) + SIZEOF (.iwram8)))
+
+.iwram9         0x0000000003000848        0x0
+ *(.iwram9)
+                0x0000000003000848                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (__load_start_iwram9, LOADADDR (.iwram9))
+                [!provide]                        PROVIDE (__load_stop_iwram9, (LOADADDR (.iwram9) + SIZEOF (.iwram9)))
+                0x0000000003000848                __iwram_overlay_end = .
+                0x000000000800724c                __ewram_lma = (__iwram_overlay_lma + (__iwram_overlay_end - __iwram_overlay_start))
+                0x0000000003000848                __iheap_start = .
+                0x0000000002000000                __ewram_start = ORIGIN (ewram)
+
+.ewram          0x0000000002000000        0x0 load address 0x000000000800724c
+ *(.ewram)
+                0x0000000002000000                . = ALIGN (0x4)
+                0x0000000002000000                __ewram_end = ABSOLUTE (.)
+                0x000000000800724c                __pad_lma = (__ewram_lma + SIZEOF (.ewram))
+
+.sbss           0x0000000002000000        0x0
+                0x0000000002000000                __sbss_start__ = ABSOLUTE (.)
+ *(.sbss)
+                0x0000000002000000                . = ALIGN (0x4)
+                0x0000000002000000                __sbss_end__ = ABSOLUTE (.)
+                0x0000000002000000                __end__ = ABSOLUTE (.)
+                0x0000000002000000                __eheap_start = ABSOLUTE (.)
+
+.pad            0x0000000002000000        0x8 load address 0x000000000800724c
+                0x0000000002000000        0x4 LONG 0x52416b64
+                0x0000000002000004        0x4 LONG 0x4d
+                0x0000000002000008                . = ALIGN (0x4)
+                0x0000000008007254                __rom_end__ = (__pad_lma + SIZEOF (.pad))
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x0000000000000000       0x22
+ *(.comment)
+ .comment       0x0000000000000000       0x22 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+                                         0x23 (size before relaxing)
+ .comment       0x0000000000000022       0x23 main.o
+ .comment       0x0000000000000022       0x23 menu.o
+ .comment       0x0000000000000022       0x23 runloop.o
+ .comment       0x0000000000000022       0x23 ugui.o
+ .comment       0x0000000000000022       0x23 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .comment       0x0000000000000022       0x23 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a(lib_a-init.o)
+ .comment       0x0000000000000022       0x23 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+ .comment       0x0000000000000022       0x23 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x0000000000000000       0xc0
+ *(.debug_aranges)
+ .debug_aranges
+                0x0000000000000000       0x20 main.o
+ .debug_aranges
+                0x0000000000000020       0x20 menu.o
+ .debug_aranges
+                0x0000000000000040       0x20 runloop.o
+ .debug_aranges
+                0x0000000000000060       0x20 ugui.o
+ .debug_aranges
+                0x0000000000000080       0x20 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .debug_aranges
+                0x00000000000000a0       0x20 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info     0x0000000000000000     0xa74b
+ *(.debug_info)
+ .debug_info    0x0000000000000000     0x115c main.o
+ .debug_info    0x000000000000115c      0x91f menu.o
+ .debug_info    0x0000000000001a7b       0x6c runloop.o
+ .debug_info    0x0000000000001ae7     0x881e ugui.o
+ .debug_info    0x000000000000a305      0x3a6 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .debug_info    0x000000000000a6ab       0xa0 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+
+.debug_abbrev   0x0000000000000000      0xb66
+ *(.debug_abbrev)
+ .debug_abbrev  0x0000000000000000      0x33b main.o
+ .debug_abbrev  0x000000000000033b      0x200 menu.o
+ .debug_abbrev  0x000000000000053b       0x66 runloop.o
+ .debug_abbrev  0x00000000000005a1      0x3e2 ugui.o
+ .debug_abbrev  0x0000000000000983      0x1cf /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .debug_abbrev  0x0000000000000b52       0x14 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+
+.debug_line     0x0000000000000000     0x2404
+ *(.debug_line)
+ .debug_line    0x0000000000000000      0x2e8 main.o
+ .debug_line    0x00000000000002e8      0x174 menu.o
+ .debug_line    0x000000000000045c       0x69 runloop.o
+ .debug_line    0x00000000000004c5     0x1cae ugui.o
+ .debug_line    0x0000000000002173      0x1ec /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .debug_line    0x000000000000235f       0xa5 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+
+.debug_frame    0x0000000000000000     0x13a8
+ *(.debug_frame)
+ .debug_frame   0x0000000000000000       0x28 main.o
+ .debug_frame   0x0000000000000028       0x68 menu.o
+ .debug_frame   0x0000000000000090       0x28 runloop.o
+ .debug_frame   0x00000000000000b8     0x1240 ugui.o
+ .debug_frame   0x00000000000012f8       0xb0 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+
+.debug_str      0x0000000000000000     0x1b8e
+ *(.debug_str)
+ .debug_str     0x0000000000000000      0x8bf main.o
+                                        0x968 (size before relaxing)
+ .debug_str     0x00000000000008bf      0x302 menu.o
+                                        0x5ef (size before relaxing)
+ .debug_str     0x0000000000000bc1       0x2d runloop.o
+                                         0xf5 (size before relaxing)
+ .debug_str     0x0000000000000bee      0xe7f ugui.o
+                                       0x1203 (size before relaxing)
+ .debug_str     0x0000000000001a6d      0x121 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+                                        0x2af (size before relaxing)
+
+.debug_loc      0x0000000000000000     0xe428
+ *(.debug_loc)
+ .debug_loc     0x0000000000000000       0x16 main.o
+ .debug_loc     0x0000000000000016       0x88 menu.o
+ .debug_loc     0x000000000000009e     0xdfe4 ugui.o
+ .debug_loc     0x000000000000e082      0x3a6 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+
+.stack          0x0000000000080000        0x0
+                0x0000000000080000                _stack = .
+ *(.stack)
+
+.note.gnu.arm.ident
+ *(.note.gnu.arm.ident)
+
+.ARM.attributes
+                0x0000000000000000       0x2c
+ *(.ARM.attributes)
+ .ARM.attributes
+                0x0000000000000000       0x20 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+ .ARM.attributes
+                0x0000000000000020       0x16 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crti.o
+ .ARM.attributes
+                0x0000000000000036       0x30 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+ .ARM.attributes
+                0x0000000000000066       0x2c main.o
+ .ARM.attributes
+                0x0000000000000092       0x2c menu.o
+ .ARM.attributes
+                0x00000000000000be       0x2c runloop.o
+ .ARM.attributes
+                0x00000000000000ea       0x2c ugui.o
+ .ARM.attributes
+                0x0000000000000116       0x30 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
+ .ARM.attributes
+                0x0000000000000146       0x16 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(InterruptDispatcher.o)
+ .ARM.attributes
+                0x000000000000015c       0x30 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a(lib_a-init.o)
+ .ARM.attributes
+                0x000000000000018c       0x30 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a(malloc_vars.o)
+ .ARM.attributes
+                0x00000000000001bc       0x30 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+ .ARM.attributes
+                0x00000000000001ec       0x16 /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtn.o
+
+/DISCARD/
+ *(.note.GNU-stack)
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/gba_crt0.o
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crti.o
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtbegin.o
+LOAD main.o
+LOAD menu.o
+LOAD runloop.o
+LOAD ugui.o
+LOAD /Users/Hoppy/devkitPRO/libgba/lib/libmm.a
+LOAD /Users/Hoppy/devkitPRO/libgba/lib/libgba.a
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libstdc++.a
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libm.a
+START GROUP
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/libgcc.a
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libg.a
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libc.a
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/../../../../arm-none-eabi/lib/thumb/libsysbase.a
+END GROUP
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtend.o
+LOAD /Users/Hoppy/devkitARM/bin/../lib/gcc/arm-none-eabi/6.3.0/thumb/crtn.o
+OUTPUT(/Volumes/compHDD/ClexaGBA/ClexaGBA.elf elf32-littlearm)
+
+.debug_ranges   0x0000000000000000      0xa28
+ .debug_ranges  0x0000000000000000       0x10 main.o
+ .debug_ranges  0x0000000000000010      0x9d0 ugui.o
+ .debug_ranges  0x00000000000009e0       0x48 /Users/Hoppy/devkitPRO/libgba/lib/libgba.a(interrupt.o)
