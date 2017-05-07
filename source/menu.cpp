@@ -9,14 +9,14 @@ uint16_t*   vram = ((uint16_t*)0x06000000);
 UG_GUI      renderer;
 UG_WINDOW   render_window;
 UG_OBJECT   render_objects[MAX_OBJECTS];
-uint16_t    render_current_object;
+UG_BUTTON   render_buttons[2];
 
 static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
    uint16_t fixed = 0;//gba has red and blue swapped
    fixed |= color >> 11;//red
    fixed |= color << 10;//blue
    fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
-   vram[x + (y * 240)] = fixed;
+   vram[x + (y * SCREEN_WIDTH)] = fixed;
 }
 
 static void message_cb(UG_MESSAGE* msg_ptr){
@@ -24,9 +24,8 @@ static void message_cb(UG_MESSAGE* msg_ptr){
 }
 
 void init_menu(){
-   UG_Init(&renderer, gba_plot_pixel, 240, 160);
+   UG_Init(&renderer, gba_plot_pixel, SCREEN_WIDTH, SCREEN_HEIGHT);
    UG_WindowCreate(&render_window, render_objects, MAX_OBJECTS, message_cb);
-   render_current_object = 0;
    
    
    UG_FontSelect(&FONT_6X8);
@@ -37,12 +36,27 @@ void init_menu(){
    
    UG_WindowSetXStart(&render_window, 0);
    UG_WindowSetYStart(&render_window, 0);
-   UG_WindowSetXEnd(&render_window, 240);
-   UG_WindowSetYEnd(&render_window, 160);
+   UG_WindowSetXEnd(&render_window, SCREEN_WIDTH);
+   UG_WindowSetYEnd(&render_window, SCREEN_HEIGHT);
    UG_WindowSetTitleColor(&render_window, C_BLUE);
    UG_WindowSetTitleTextColor(&render_window, C_WHITE);
    UG_WindowSetTitleTextAlignment(&render_window, ALIGN_CENTER);
-   UG_WindowSetTitleText(&render_window, "Placeholder");
+   UG_WindowSetTitleText(&render_window, "BIOS 2117");
+   
+   //UG_WindowGetInnerWidth(&render_window);
+   
+   //Start button
+   UG_ButtonCreate(&render_window, &render_buttons[0], 0 /*id*/, 0 /*xs*/, 0 /*ys*/, 80 /*xe*/, 20 /*ye*/);
+   UG_ButtonSetText(&render_window, 0 /*id*/, "Start");
+   //UG_ButtonSetAlignment(&render_window, 0 /*id*/, ALIGN_BOTTOM_LEFT);
+   UG_ButtonShow(&render_window, 0);
+   
+   //Options button
+   UG_ButtonCreate(&render_window, &render_buttons[1], 1 /*id*/, UG_WindowGetInnerWidth(&render_window) - 1 - 80 /*xs*/, 0 /*ys*/, UG_WindowGetInnerWidth(&render_window) - 1 /*xe*/, 20 /*ye*/);
+   UG_ButtonSetText(&render_window, 1 /*id*/, "Options");
+   //UG_ButtonSetAlignment(&render_window, 1 /*id*/, ALIGN_BOTTOM_RIGHT);
+   UG_ButtonShow(&render_window, 1);
+   
    
    UG_WindowShow(&render_window);
 }
