@@ -3,6 +3,7 @@
 
 #include "ugui/ugui.h"
 #include "runloop.h"
+#include "gameengine.h"
 
 #define MAX_OBJECTS 50
 #define NUM_BUTTONS 2
@@ -90,7 +91,8 @@ void draw_menu(){
    if((keys & KEY_A) && (render_selected_button == 0)){
       in_game = true;
       update_window = false;
-      UG_FillScreen(C_BLUE);
+      //UG_FillScreen(C_BLUE);
+      switch_to_game();
    }
 
    if(update_window){
