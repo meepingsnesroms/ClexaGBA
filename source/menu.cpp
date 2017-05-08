@@ -2,12 +2,13 @@
 #include <gba_input.h>
 
 #include "ugui/ugui.h"
+#include "runloop.h"
 
 #define MAX_OBJECTS 50
 #define NUM_BUTTONS 2
 
 //using 240*160 16bit color, mode 3
-uint16_t*   vram = ((uint16_t*)0x06000000);
+static uint16_t *const vram = ((uint16_t*)0x06000000);
 UG_GUI      renderer;
 UG_WINDOW   render_window;
 UG_OBJECT   render_objects[MAX_OBJECTS];
@@ -42,12 +43,9 @@ void init_menu(){
    UG_WindowSetTitleTextAlignment(&render_window, ALIGN_CENTER);
    UG_WindowSetTitleText(&render_window, "BIOS 2117");
    
-   //UG_WindowGetInnerWidth(&render_window);
-   
    //Start button
    UG_ButtonCreate(&render_window, &render_buttons[0], 0 /*id*/, 0 /*xs*/, 0 /*ys*/, 80 /*xe*/, 20 /*ye*/);
    UG_ButtonSetText(&render_window, 0 /*id*/, "Start");
-   //UG_ButtonSetAlignment(&render_window, 0 /*id*/, ALIGN_BOTTOM_LEFT);
    UG_ButtonShow(&render_window, 0);
    render_selected_button = 0;
    UG_ButtonSetStyle(&render_window, 0, BTN_STYLE_2D);
@@ -55,7 +53,6 @@ void init_menu(){
    //Options button
    UG_ButtonCreate(&render_window, &render_buttons[1], 1 /*id*/, UG_WindowGetInnerWidth(&render_window) - 1 - 80 /*xs*/, 0 /*ys*/, UG_WindowGetInnerWidth(&render_window) - 1 /*xe*/, 20 /*ye*/);
    UG_ButtonSetText(&render_window, 1 /*id*/, "Options");
-   //UG_ButtonSetAlignment(&render_window, 1 /*id*/, ALIGN_BOTTOM_RIGHT);
    UG_ButtonShow(&render_window, 1);
    
    
@@ -89,8 +86,11 @@ void draw_menu(){
       }
    }
    
-   if(keys & KEY_A){
-      //took
+   //select button
+   if((keys & KEY_A) && (render_selected_button == 0)){
+      in_game = true;
+      update_window = false;
+      UG_FillScreen(C_BLUE);
    }
 
    if(update_window){
