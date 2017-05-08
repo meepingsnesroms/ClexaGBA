@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "runloop.h"
+#include "gameengine.h"
 #include "menu.h"
 
 //---------------------------------------------------------------------------------
@@ -27,6 +28,9 @@ int main(void) {
    
    // setup menu structs
    init_menu();
+   
+   // setup game structs
+   init_game();
 
    while (1) {
       run_frame();
