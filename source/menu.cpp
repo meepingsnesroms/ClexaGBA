@@ -28,6 +28,13 @@ static void message_cb(UG_MESSAGE* msg_ptr){
    //do nothing
 }
 
+void print_bsod(char* text){
+   UG_SetForecolor(C_WHITE);
+   UG_SetBackcolor(C_BLUE);
+   UG_FillScreen(C_BLUE);
+   UG_PutString(0, 0, text);
+}
+
 void init_menu(){
    UG_Init(&renderer, gba_plot_pixel, SCREEN_WIDTH, SCREEN_HEIGHT);
    UG_WindowCreate(&render_window, render_objects, MAX_OBJECTS, message_cb);

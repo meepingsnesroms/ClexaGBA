@@ -1,13 +1,19 @@
 #include <gba_video.h>
 #include <gba_input.h>
+#include <gba_systemcalls.h>
 #include <stdlib.h>
+#include <string.h>
 
 //#include <vector>
+#include "chipmunk/chipmunk_structs.h"//fixes compiler crap
+#include "chipmunk/chipmunk.h"
+
 #include "../data/clarke.cdata"
 #include "../data/clexalogo.cdata"
 #include "../data/crosshair.cdata"
 #include "../data/polis.cdata"
 
+#include "menu.h"
 #include "ugui/ugui.h"//for color defines
 
 //use framebuffer for now
@@ -42,6 +48,11 @@ typedef struct{
    uint16_t y;//current y coord
    uint16_t w;//width
    uint16_t h;//height
+   struct{
+      uint16_t x;//x start of corrupted background
+      uint16_t y;//y start of corrupted background
+      bool isdirty;
+   }dirty;
    int8_t accel_x;//how far to move on x axis per frame -127<->126
    int8_t accel_y;//how far to move on y axis per frame -127<->126
    uint16_t angle;//degrees 0<->359
@@ -66,6 +77,7 @@ void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size){
    }
 }
 
+/*
 void draw_square(uint16_t x, uint16_t y, uint16_t color){
    for(uint16_t yinc = 0; yinc < 16; yinc++){
       for(uint16_t xinc = 0; xinc < 16; xinc++){
@@ -81,6 +93,17 @@ void restore_square(uint16_t x, uint16_t y){
       }
    }
 }
+*/
+
+void restore_background(entity& ent){
+   if(!ent.dirty.isdirty)return;
+   for(uint16_t yinc = 0; yinc < ent.h; yinc++){
+      for(uint16_t xinc = 0; xinc < ent.w; xinc++){
+         vram[ent.dirty.x + xinc + ((ent.dirty.y + yinc) * SCREEN_WIDTH)] = background[ent.dirty.x + xinc + ((ent.dirty.y + yinc) * SCREEN_WIDTH)];
+      }
+   }
+   ent.dirty.isdirty = false;
+}
 
 void draw_entity(entity& ent){
    for(uint16_t yinc = 0; yinc < ent.h; yinc++){
@@ -92,6 +115,9 @@ void draw_entity(entity& ent){
          }
       }
    }
+   ent.dirty.x = ent.x;
+   ent.dirty.y = ent.y;
+   ent.dirty.isdirty = true;
 }
 
 void draw_entity_background(entity& ent){
@@ -112,6 +138,7 @@ entity default_obj_state{
    .y = 0;
    .w = 0;
    .h = 0;
+   .dirty = {.x = 0, .y = 0, .isdirty = false};
    .accel_x = 0;
    .accel_y = 0;
    .angle = 0;
@@ -146,7 +173,6 @@ void draw_logo(){
    polis.active = true;
    draw_entity_background(polis);
    
-   /*
    entity logo;
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
    //need to fix starting location
@@ -157,8 +183,89 @@ void draw_logo(){
    logo.bitmap = bitmap_conv_ram;
    logo.active = true;
    draw_entity_background(logo);
-   */
 }
+
+#if 1
+
+int chipmunk_test(){
+   // cpVect is a 2D vector and cpv() is a shortcut for initializing them.
+   cpVect gravity = cpv(0, -100);
+   
+   // Create an empty space.
+   cpSpace *space = cpSpaceNew();
+   if(space == NULL)return 1;//not enough memory
+   cpSpaceSetGravity(space, gravity);
+   
+   // Add a static line segment shape for the ground.
+   // We'll make it slightly tilted so the ball will roll off.
+   // We attach it to space->staticBody to tell Chipmunk it shouldn't be movable.
+   cpShape *ground = cpSegmentShapeNew(space->staticBody, cpv(-20, 5), cpv(20, -5), 0);
+   if(ground == NULL)return 2;//not enough memory
+   cpShapeSetFriction(ground, 1);
+   cpSpaceAddShape(space, ground);
+   
+   // Now let's make a ball that falls onto the line and rolls off.
+   // First we need to make a cpBody to hold the physical properties of the object.
+   // These include the mass, position, velocity, angle, etc. of the object.
+   // Then we attach collision shapes to the cpBody to give it a size and shape.
+   
+   cpFloat radius = 5;
+   cpFloat mass = 1;
+   
+   // The moment of inertia is like mass for rotation
+   // Use the cpMomentFor*() functions to help you approximate it.
+   cpFloat moment = cpMomentForCircle(mass, 0, radius, cpvzero);
+   
+   // The cpSpaceAdd*() functions return the thing that you are adding.
+   // It's convenient to create and add an object in one line.
+   cpBody *ballBody = cpSpaceAddBody(space, cpBodyNew(mass, moment));
+   if(ballBody == NULL)return 3;//not enough memory
+   //cpBodySetPos(ballBody, cpv(0, 15));
+   cpBodySetPosition(ballBody, cpv(0, 15));
+   
+   // Now we create the collision shape for the ball.
+   // You can create multiple collision shapes that point to the same body.
+   // They will all be attached to the body and move around to follow it.
+   cpShape *ballShape = cpSpaceAddShape(space, cpCircleShapeNew(ballBody, radius, cpvzero));
+   if(ballShape == NULL)return 4;//not enough memory
+   cpShapeSetFriction(ballShape, 0.7);
+   
+   // Now that it's all set up, we simulate all the objects in the space by
+   // stepping forward through time in small increments called steps.
+   // It is *highly* recommended to use a fixed size time step.
+   cpFloat timeStep = 1.0/60.0;
+   for(cpFloat time = 0; time < 2; time += timeStep){
+      //cpVect pos = cpBodyGetPos(ballBody);
+      //cpVect vel = cpBodyGetVel(ballBody);
+      cpVect pos = cpBodyGetPosition(ballBody);
+      cpVect vel = cpBodyGetVelocity(ballBody);
+      
+      PLAYER.x = (uint16_t)pos.x % 240;
+      PLAYER.y = (uint16_t)pos.y % 160;
+      draw_entity(PLAYER);
+      
+      /*
+       printf(
+       "Time is %5.2f. ballBody is at (%5.2f, %5.2f). It's velocity is (%5.2f, %5.2f)\n",
+       time, pos.x, pos.y, vel.x, vel.y
+       );
+       */
+      
+      
+      VBlankIntrWait();
+      cpSpaceStep(space, timeStep);
+   }
+   
+   // Clean up our objects and exit!
+   cpShapeFree(ballShape);
+   cpBodyFree(ballBody);
+   cpShapeFree(ground);
+   cpSpaceFree(space);
+   
+   return 0;
+}
+
+#endif
 
 void init_game(){
    bitmap_conv_ram = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
@@ -185,6 +292,7 @@ void init_game(){
    PLAYER.y = 0;
    PLAYER.w = 16;
    PLAYER.h = 16;
+   PLAYER.dirty.isdirty = false;
    PLAYER.bitmap = playermap;
 }
 
@@ -198,7 +306,7 @@ void run_frame_game(){
    keys = ~(REG_KEYINPUT);
    
    //draw_square(PLAYER.x, PLAYER.y, C_BLACK);
-   restore_square(PLAYER.x, PLAYER.y);
+   //restore_square(PLAYER.x, PLAYER.y);
    
    if(keys & KEY_LEFT){
       if(PLAYER.x > 0){
@@ -222,8 +330,21 @@ void run_frame_game(){
    }
    
    if(keys & KEY_B){
-      draw_logo();
+      int failed = chipmunk_test();
+      if(failed != 0){
+         char number[5];
+         char errmsg[50];
+         memset(number, 0, 5);
+         memset(errmsg, 0, 50);
+         number[0] = 48/*ascii 0*/ + failed;
+         strcat(errmsg, "ERR:");
+         strcat(errmsg, number);
+         print_bsod(errmsg);
+      }
+      
+      //draw_logo();
    }
    
+   restore_background(PLAYER);
    draw_entity(PLAYER);
 }
