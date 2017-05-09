@@ -4,6 +4,8 @@
 
 //#include <vector>
 #include "../data/clarke.cdata"
+#include "../data/clexalogo.cdata"
+#include "../data/polis.cdata"
 
 #include "ugui/ugui.h"//for color defines
 
@@ -14,8 +16,9 @@ static uint16_t keys;
 #define ENTITYS 20
 #define PLAYER characters[0]
 
-uint16_t* random_background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t playermap[16 * 16];
+uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
+uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
+uint16_t  playermap[16 * 16];
 
 unsigned int cust_rand(){
    static unsigned int z1 = 12345, z2 = 12345, z3 = 12345, z4 = 12345;
@@ -73,7 +76,7 @@ void draw_square(uint16_t x, uint16_t y, uint16_t color){
 void restore_square(uint16_t x, uint16_t y){
    for(uint16_t yinc = 0; yinc < 16; yinc++){
       for(uint16_t xinc = 0; xinc < 16; xinc++){
-         vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = random_background[x + xinc + ((y + yinc) * SCREEN_WIDTH)];
+         vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = background[x + xinc + ((y + yinc) * SCREEN_WIDTH)];
       }
    }
 }
@@ -85,6 +88,18 @@ void draw_entity(entity& ent){
          uint16_t color = ent.bitmap[xinc + (yinc * ent.w)];
          if(color & 0x8000){
             vram[ent.x + xinc + ((ent.y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
+         }
+      }
+   }
+}
+
+void draw_entity_background(entity& ent){
+   for(uint16_t yinc = 0; yinc < ent.h; yinc++){
+      for(uint16_t xinc = 0; xinc < ent.w; xinc++){
+         //check "is visible" bit
+         uint16_t color = ent.bitmap[xinc + (yinc * ent.w)];
+         if(color & 0x8000){
+            background[ent.x + xinc + ((ent.y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
          }
       }
    }
@@ -119,22 +134,47 @@ void cull_characters(){
    
 }
 
-void init_game(){
-   //SetMode(MODE_3 | BG2_ON /* 240*160 16bit color */);
+void draw_logo(){
+   entity polis;
+   conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)polis_data[0], POLIS_FRAME_WIDTH * POLIS_FRAME_HEIGHT);
+   polis.x = 0;
+   polis.y = 20;//gba is 160 tall, image is 135
+   polis.w = POLIS_FRAME_WIDTH;
+   polis.h = POLIS_FRAME_HEIGHT;
+   polis.bitmap = bitmap_conv_ram;
+   polis.active = true;
+   draw_entity_background(polis);
    
-   random_background = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
-   
-   if(random_background == NULL){
-      //just ponit to random ram to be read to the framebuffer
-      random_background = (uint16_t*)0x2000000;//workram pointer
-   }
-   else {
-      //make a real random framebuffer
-      for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
-         random_background[cnt] = cust_rand() % 0x7FFF;
-      }
-   }
+   /*
+   entity logo;
+   conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
+   //need to fix starting location
+   logo.x = 0;
+   logo.y = 0;
+   logo.w = CLEXA_LOGO_FRAME_WIDTH;
+   logo.h = CLEXA_LOGO_FRAME_HEIGHT;
+   logo.bitmap = bitmap_conv_ram;
+   logo.active = true;
+   draw_entity_background(logo);
+   */
+}
 
+void init_game(){
+   bitmap_conv_ram = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
+   background = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
+   
+   if(background == NULL || bitmap_conv_ram == NULL){
+      while(1);//abort
+   }
+   
+   //make background random
+   for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
+      background[cnt] = cust_rand() % 0x7FFF;
+   }
+   
+   //polis tower
+   draw_logo();
+   
    
    conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 16 * 16);
    
@@ -148,18 +188,13 @@ void init_game(){
 
 void switch_to_game(){
    for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
-      vram[cnt] = random_background[cnt];
+      vram[cnt] = background[cnt];
    }
 }
 
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
    
-   /*
-   for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
-      vram[cnt] = random_background[cnt];
-   }
-   */
    //draw_square(PLAYER.x, PLAYER.y, C_BLACK);
    restore_square(PLAYER.x, PLAYER.y);
    
@@ -184,14 +219,9 @@ void run_frame_game(){
       }
    }
    
-#if 0
    if(keys & KEY_B){
-      //reset screen
-      for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
-         vram[cnt] = 0x7C00/*blue*/;
-      }
+      draw_logo();
    }
-#endif
    
    draw_entity(PLAYER);
 }

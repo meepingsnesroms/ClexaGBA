@@ -62,7 +62,7 @@ void init_menu(){
 }
 
 void switch_to_menu(){
-   SetMode(MODE_3 | BG2_ON /* 240*160 16bit color */);
+   //SetMode(MODE_3 | BG2_ON /* 240*160 16bit color */);
 }
 
 void draw_menu(){
@@ -91,7 +91,6 @@ void draw_menu(){
    if((keys & KEY_A) && (render_selected_button == 0)){
       in_game = true;
       update_window = false;
-      //UG_FillScreen(C_BLUE);
       switch_to_game();
    }
 
