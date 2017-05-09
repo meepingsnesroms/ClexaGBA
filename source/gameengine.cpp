@@ -12,33 +12,6 @@
 #include "menu.h"
 #include "ugui/ugui.h"//for color defines
 
-//use framebuffer for now
-static uint16_t *const vram = ((uint16_t*)0x06000000);
-static uint16_t keys;
-
-#define ENTITYS 20
-#define PLAYER characters[0]
-
-uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t  playermap[16 * 16];
-
-unsigned int cust_rand(){
-   static unsigned int z1 = 12345, z2 = 12345, z3 = 12345, z4 = 12345;
-   unsigned int b;
-   b  = ((z1 << 6) ^ z1) >> 13;
-   z1 = ((z1 & 4294967294U) << 18) ^ b;
-   b  = ((z2 << 2) ^ z2) >> 27;
-   z2 = ((z2 & 4294967288U) << 2) ^ b;
-   b  = ((z3 << 13) ^ z3) >> 21;
-   z3 = ((z3 & 4294967280U) << 7) ^ b;
-   b  = ((z4 << 3) ^ z4) >> 12;
-   z4 = ((z4 & 4294967168U) << 13) ^ b;
-   return (z1 ^ z2 ^ z3 ^ z4);
-}
-
-
-
 typedef struct{
    uint16_t x;//current x coord
    uint16_t y;//current y coord
@@ -54,8 +27,94 @@ typedef struct{
    uint16_t angle;//degrees 0<->359
    bool active;//if this is entity is currently in use
    bool bullet;
+   bool is_hit;
+   int8_t index;
    uint16_t* bitmap;
+   void (*frame_iterate)(void* me);
 }entity;
+
+
+//use framebuffer for now
+static uint16_t *const vram = ((uint16_t*)0x06000000);
+static uint16_t keys;
+
+#define ENTITYS 20
+#define PLAYER characters[0]
+
+uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
+uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
+uint16_t  playermap[16 * 16];
+uint16_t  crosshair[16 * 16];
+uint16_t  crosshair2[16 * 16];
+
+entity   characters[ENTITYS];
+entity*  active_characters[ENTITYS];
+uint8_t  num_active_characters;
+
+entity& get_avail_entity(){
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      if(!characters[cnt].active){
+         return characters[cnt];
+      }
+   }
+   print_bsod("Entity overflow!");
+   while(1);
+}
+
+void reset_entity(entity& ent){
+   ent.x = 0;
+   ent.y = 0;
+   ent.w = 0;
+   ent.h = 0;
+   ent.dirty.x = 0;
+   ent.dirty.y = 0;
+   ent.dirty.isdirty = false;
+   ent.accel_x = 0;
+   ent.accel_y = 0;
+   ent.angle = 0;
+   ent.active = false;
+   ent.bullet = false;
+   ent.is_hit = false;
+   ent.index  = -1;
+   ent.bitmap = NULL;
+   
+   //callback
+   ent.frame_iterate = NULL;
+}
+/*
+void cull_entitys(){
+   //uint8_t chrs_left = num_active_characters;
+   for(uint8_t cnt = 0; cnt < num_active_characters; cnt++){
+      if(!active_characters[cnt]->active){
+         //move last valid entry here and destroy old reference
+         for(uint8_t nextchr = num_active_characters - 1; nextchr > cnt; nextchr--){
+            if(active_characters[nextchr] != NULL && active_characters[nextchr]->active){
+               active_characters[cnt] = active_characters[nextchr];
+               active_characters[nextchr] = NULL;
+               num_active_characters--;
+               break;
+            }
+            
+         }
+      }
+   }
+   //num_active_characters = chrs_left;
+}
+*/
+
+unsigned int cust_rand(){
+   static unsigned int z1 = 12345, z2 = 12345, z3 = 12345, z4 = 12345;
+   unsigned int b;
+   b  = ((z1 << 6) ^ z1) >> 13;
+   z1 = ((z1 & 4294967294U) << 18) ^ b;
+   b  = ((z2 << 2) ^ z2) >> 27;
+   z2 = ((z2 & 4294967288U) << 2) ^ b;
+   b  = ((z3 << 13) ^ z3) >> 21;
+   z3 = ((z3 & 4294967280U) << 7) ^ b;
+   b  = ((z4 << 3) ^ z4) >> 12;
+   z4 = ((z4 & 4294967168U) << 13) ^ b;
+   return (z1 ^ z2 ^ z3 ^ z4);
+}
 
 void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size){
    for(uint32_t cnt = 0; cnt < size; cnt++){
@@ -73,23 +132,14 @@ void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size){
    }
 }
 
-/*
-void draw_square(uint16_t x, uint16_t y, uint16_t color){
-   for(uint16_t yinc = 0; yinc < 16; yinc++){
-      for(uint16_t xinc = 0; xinc < 16; xinc++){
-         vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color;
+void invert_color(uint16_t* data, uint32_t size){
+   for(uint32_t cnt = 0; cnt < size; cnt++){
+      //only modify visible pixels
+      if(data[cnt] & 0x8000){
+         data[cnt] = (~data[cnt]) | 0x8000;
       }
    }
 }
-
-void restore_square(uint16_t x, uint16_t y){
-   for(uint16_t yinc = 0; yinc < 16; yinc++){
-      for(uint16_t xinc = 0; xinc < 16; xinc++){
-         vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = background[x + xinc + ((y + yinc) * SCREEN_WIDTH)];
-      }
-   }
-}
-*/
 
 void restore_background(entity& ent){
    if(!ent.dirty.isdirty)return;
@@ -128,34 +178,61 @@ void draw_entity_background(entity& ent){
    }
 }
 
-/*
-entity default_obj_state{
-   .x = 0;
-   .y = 0;
-   .w = 0;
-   .h = 0;
-   .dirty = {.x = 0, .y = 0, .isdirty = false};
-   .accel_x = 0;
-   .accel_y = 0;
-   .angle = 0;
-   .active = false;
-   .bullet = false;
-   .bitmap = NULL;
-};
-*/
-
-/*
-bool collision_test(entity& chr1, entity& chr2){
-   
+void render_entitys(){
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      if(characters[cnt].active){
+         draw_entity(characters[cnt]);
+      }
+   }
 }
-*/
 
-entity   characters[ENTITYS];
-entity*  active_characters[ENTITYS];
-uint8_t  num_active_characters;
+void clear_dirty_entitys(){
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      if(characters[cnt].active && characters[cnt].dirty.isdirty){
+         restore_background(characters[cnt]);
+      }
+   }
+}
 
-void cull_characters(){
-   
+bool collision_test(entity& chr1, entity& chr2){
+   if (chr1.x < chr2.x + chr2.w &&
+       chr1.x + chr1.w > chr2.x &&
+       chr1.y < chr2.y + chr2.h &&
+       chr1.h + chr1.y > chr2.y)
+   {
+      return true;
+   }
+   return false;
+}
+
+void test_collisions(){
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      for(uint8_t cmp = cnt + 1; cmp < ENTITYS; cmp++){
+         if(collision_test(characters[cnt], characters[cmp])){
+            characters[cnt].is_hit = true;
+            characters[cmp].is_hit = true;
+         }
+      }
+   }
+}
+
+void update_entitys(){
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      if(characters[cnt].frame_iterate){
+         characters[cnt].frame_iterate(&characters[cnt]);
+      }
+   }
+}
+
+void fire_gun(void* me){
+   entity& this_ent = *((entity*)me);
+   if(this_ent.is_hit){
+      this_ent.bitmap = crosshair2;
+      this_ent.is_hit = false;
+   }
+   else{
+      this_ent.bitmap = crosshair;
+   }
 }
 
 void draw_logo(){
@@ -198,16 +275,40 @@ void init_game(){
    draw_logo();
    
    
-   //conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 16 * 16);
-   conv_32bpp_to_16(playermap, (uint32_t*)crosshair_data[0], 16 * 16);
+   conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 16 * 16);
+   conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
-   PLAYER.active = true;
+   //fired crosshair
+   //conv_32bpp_to_16(crosshair2, (uint32_t*)crosshair_data[0], 16 * 16);
+   memcpy(crosshair2, crosshair, 16 * 16 * sizeof(uint16_t));
+   invert_color(crosshair2, 16 * 16);
+   
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      reset_entity(characters[cnt]);
+   }
+   
    PLAYER.x = 0;
    PLAYER.y = 0;
    PLAYER.w = 16;
    PLAYER.h = 16;
-   PLAYER.dirty.isdirty = false;
+   PLAYER.active = true;
+   PLAYER.index = 0;
+   //PLAYER.dirty.isdirty = false;
+   //PLAYER.bitmap = crosshair;
    PLAYER.bitmap = playermap;
+   
+   entity& thing1 = get_avail_entity();
+   reset_entity(thing1);
+   thing1.x = 50;
+   thing1.y = 50;
+   thing1.w = 16;
+   thing1.h = 16;
+   thing1.active = true;
+   thing1.index  = 1;
+   thing1.bitmap = crosshair;
+   thing1.frame_iterate = fire_gun;
+   
+   
 }
 
 void switch_to_game(){
@@ -247,6 +348,10 @@ void run_frame_game(){
       draw_logo();
    }
    
-   restore_background(PLAYER);
-   draw_entity(PLAYER);
+   //restore_background(PLAYER);
+   //draw_entity(PLAYER);
+   test_collisions();
+   update_entitys();
+   clear_dirty_entitys();
+   render_entitys();
 }
