@@ -5,6 +5,7 @@
 //#include <vector>
 #include "../data/clarke.cdata"
 #include "../data/clexalogo.cdata"
+#include "../data/crosshair.cdata"
 #include "../data/polis.cdata"
 
 #include "ugui/ugui.h"//for color defines
@@ -176,7 +177,8 @@ void init_game(){
    draw_logo();
    
    
-   conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 16 * 16);
+   //conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 16 * 16);
+   conv_32bpp_to_16(playermap, (uint32_t*)crosshair_data[0], 16 * 16);
    
    PLAYER.active = true;
    PLAYER.x = 0;
