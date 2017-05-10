@@ -20,7 +20,7 @@ typedef struct{
    struct{
       uint16_t x;//x start of corrupted background
       uint16_t y;//y start of corrupted background
-      bool isdirty;
+      bool is_dirty;
    }dirty;
    int8_t accel_x;//how far to move on x axis per frame -127<->126
    int8_t accel_y;//how far to move on y axis per frame -127<->126
@@ -28,11 +28,18 @@ typedef struct{
    bool active;//if this is entity is currently in use
    bool bullet;
    bool is_hit;
+   bool is_solid;
    int8_t index;
    uint16_t* bitmap;
    void (*frame_iterate)(void* me);
 }entity;
 
+/*
+typedef struct{
+   
+   
+}colision_stat;
+*/
 
 //use framebuffer for now
 static uint16_t *const vram = ((uint16_t*)0x06000000);
@@ -48,7 +55,6 @@ uint16_t  crosshair[16 * 16];
 uint16_t  crosshair2[16 * 16];
 
 entity   characters[ENTITYS];
-entity*  active_characters[ENTITYS];
 uint8_t  num_active_characters;
 
 entity& get_avail_entity(){
@@ -68,39 +74,20 @@ void reset_entity(entity& ent){
    ent.h = 0;
    ent.dirty.x = 0;
    ent.dirty.y = 0;
-   ent.dirty.isdirty = false;
+   ent.dirty.is_dirty = false;
    ent.accel_x = 0;
    ent.accel_y = 0;
    ent.angle = 0;
    ent.active = false;
    ent.bullet = false;
    ent.is_hit = false;
+   ent.is_solid = false;
    ent.index  = -1;
    ent.bitmap = NULL;
    
    //callback
    ent.frame_iterate = NULL;
 }
-/*
-void cull_entitys(){
-   //uint8_t chrs_left = num_active_characters;
-   for(uint8_t cnt = 0; cnt < num_active_characters; cnt++){
-      if(!active_characters[cnt]->active){
-         //move last valid entry here and destroy old reference
-         for(uint8_t nextchr = num_active_characters - 1; nextchr > cnt; nextchr--){
-            if(active_characters[nextchr] != NULL && active_characters[nextchr]->active){
-               active_characters[cnt] = active_characters[nextchr];
-               active_characters[nextchr] = NULL;
-               num_active_characters--;
-               break;
-            }
-            
-         }
-      }
-   }
-   //num_active_characters = chrs_left;
-}
-*/
 
 unsigned int cust_rand(){
    static unsigned int z1 = 12345, z2 = 12345, z3 = 12345, z4 = 12345;
@@ -142,13 +129,13 @@ void invert_color(uint16_t* data, uint32_t size){
 }
 
 void restore_background(entity& ent){
-   if(!ent.dirty.isdirty)return;
+   if(!ent.dirty.is_dirty)return;
    for(uint16_t yinc = 0; yinc < ent.h; yinc++){
       for(uint16_t xinc = 0; xinc < ent.w; xinc++){
          vram[ent.dirty.x + xinc + ((ent.dirty.y + yinc) * SCREEN_WIDTH)] = background[ent.dirty.x + xinc + ((ent.dirty.y + yinc) * SCREEN_WIDTH)];
       }
    }
-   ent.dirty.isdirty = false;
+   ent.dirty.is_dirty = false;
 }
 
 void draw_entity(entity& ent){
@@ -163,7 +150,7 @@ void draw_entity(entity& ent){
    }
    ent.dirty.x = ent.x;
    ent.dirty.y = ent.y;
-   ent.dirty.isdirty = true;
+   ent.dirty.is_dirty = true;
 }
 
 void draw_entity_background(entity& ent){
@@ -188,7 +175,7 @@ void render_entitys(){
 
 void clear_dirty_entitys(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
-      if(characters[cnt].active && characters[cnt].dirty.isdirty){
+      if(characters[cnt].dirty.is_dirty){
          restore_background(characters[cnt]);
       }
    }
@@ -208,9 +195,11 @@ bool collision_test(entity& chr1, entity& chr2){
 void test_collisions(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       for(uint8_t cmp = cnt + 1; cmp < ENTITYS; cmp++){
-         if(collision_test(characters[cnt], characters[cmp])){
-            characters[cnt].is_hit = true;
-            characters[cmp].is_hit = true;
+         if(characters[cnt].active && characters[cmp].active){
+            if(collision_test(characters[cnt], characters[cmp])){
+               characters[cnt].is_hit = true;
+               characters[cmp].is_hit = true;
+            }
          }
       }
    }
@@ -218,10 +207,19 @@ void test_collisions(){
 
 void update_entitys(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
-      if(characters[cnt].frame_iterate){
+      if(characters[cnt].active && characters[cnt].frame_iterate){
          characters[cnt].frame_iterate(&characters[cnt]);
       }
    }
+}
+
+bool intersects_solid(entity& test){
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_test(test, characters[cnt])){
+         return true;
+      }
+   }
+   return false;
 }
 
 void fire_gun(void* me){
@@ -233,6 +231,49 @@ void fire_gun(void* me){
    else{
       this_ent.bitmap = crosshair;
    }
+}
+
+void move_player(void* me){
+   entity& this_ent = *((entity*)me);
+   
+   if(keys & KEY_LEFT){
+      if(this_ent.x > 0){
+         this_ent.x--;
+         //dont allow moving into solid objects
+         if(intersects_solid(this_ent)){
+            this_ent.x++;
+         }
+      }
+   }
+   else if(keys & KEY_RIGHT){
+      if(this_ent.x + this_ent.w < SCREEN_WIDTH){
+         this_ent.x++;
+         //dont allow moving into solid objects
+         if(intersects_solid(this_ent)){
+            this_ent.x--;
+         }
+      }
+   }
+   
+   if(keys & KEY_UP){
+      if(this_ent.y > 0){
+         this_ent.y--;
+         //dont allow moving into solid objects
+         if(intersects_solid(this_ent)){
+            this_ent.y++;
+         }
+      }
+   }
+   else if(keys & KEY_DOWN){
+      if(this_ent.y + this_ent.h < SCREEN_HEIGHT){
+         this_ent.y++;
+         //dont allow moving into solid objects
+         if(intersects_solid(this_ent)){
+            this_ent.y--;
+         }
+      }
+   }
+   
 }
 
 void draw_logo(){
@@ -249,8 +290,8 @@ void draw_logo(){
    entity logo;
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
    //need to fix starting location
-   logo.x = 0;
-   logo.y = 0;
+   logo.x = 70;
+   logo.y = 10;
    logo.w = CLEXA_LOGO_FRAME_WIDTH;
    logo.h = CLEXA_LOGO_FRAME_HEIGHT;
    logo.bitmap = bitmap_conv_ram;
@@ -279,7 +320,6 @@ void init_game(){
    conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
    //fired crosshair
-   //conv_32bpp_to_16(crosshair2, (uint32_t*)crosshair_data[0], 16 * 16);
    memcpy(crosshair2, crosshair, 16 * 16 * sizeof(uint16_t));
    invert_color(crosshair2, 16 * 16);
    
@@ -293,9 +333,8 @@ void init_game(){
    PLAYER.h = 16;
    PLAYER.active = true;
    PLAYER.index = 0;
-   //PLAYER.dirty.isdirty = false;
-   //PLAYER.bitmap = crosshair;
    PLAYER.bitmap = playermap;
+   PLAYER.frame_iterate = move_player;
    
    entity& thing1 = get_avail_entity();
    reset_entity(thing1);
@@ -304,11 +343,10 @@ void init_game(){
    thing1.w = 16;
    thing1.h = 16;
    thing1.active = true;
+   thing1.is_solid = true;//just a test
    thing1.index  = 1;
    thing1.bitmap = crosshair;
    thing1.frame_iterate = fire_gun;
-   
-   
 }
 
 void switch_to_game(){
@@ -320,36 +358,10 @@ void switch_to_game(){
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
    
-   //draw_square(PLAYER.x, PLAYER.y, C_BLACK);
-   //restore_square(PLAYER.x, PLAYER.y);
-   
-   if(keys & KEY_LEFT){
-      if(PLAYER.x > 0){
-         PLAYER.x--;
-      }
-   }
-   if(keys & KEY_RIGHT){
-      if(PLAYER.x + PLAYER.w < SCREEN_WIDTH){
-         PLAYER.x++;
-      }
-   }
-   if(keys & KEY_UP){
-      if(PLAYER.y > 0){
-         PLAYER.y--;
-      }
-   }
-   if(keys & KEY_DOWN){
-      if(PLAYER.y + PLAYER.h < SCREEN_HEIGHT){
-         PLAYER.y++;
-      }
-   }
-   
    if(keys & KEY_B){
       draw_logo();
    }
-   
-   //restore_background(PLAYER);
-   //draw_entity(PLAYER);
+
    test_collisions();
    update_entitys();
    clear_dirty_entitys();
