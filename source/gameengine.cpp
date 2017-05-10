@@ -25,6 +25,7 @@ typedef struct{
    int8_t accel_x;//how far to move on x axis per frame -127<->126
    int8_t accel_y;//how far to move on y axis per frame -127<->126
    uint16_t angle;//degrees 0<->359
+   int16_t gravity;//negitive gravity sends you upward
    bool active;//if this is entity is currently in use
    bool bullet;
    bool is_hit;
@@ -48,6 +49,7 @@ static uint16_t keys;
 #define ENTITYS 20
 #define PLAYER characters[0]
 
+
 uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t  playermap[16 * 16];
@@ -55,6 +57,8 @@ uint16_t  crosshair[16 * 16];
 uint16_t  crosshair2[16 * 16];
 
 entity   characters[ENTITYS];
+//uint8_t   enviroment_map[0x12C0];//1bpp map of solid terrain
+uint8_t* enviroment_map;//map of terrain type
 uint8_t  num_active_characters;
 
 entity& get_avail_entity(){
@@ -65,6 +69,18 @@ entity& get_avail_entity(){
    }
    print_bsod("Entity overflow!");
    while(1);
+}
+
+inline uint8_t get_environ_data(uint16_t x, uint16_t y){
+   uint32_t offset = y * SCREEN_WIDTH + x;
+   return enviroment_map[offset];
+   /*
+   uint32_t offset = y * SCREEN_WIDTH + x;
+   uint8_t  bitnum = offset % 8;
+   uint32_t bytenum = offset / 8;
+   
+   return enviroment_map[bytenum] & (1 << bitnum);
+   */
 }
 
 void reset_entity(entity& ent){
@@ -78,6 +94,7 @@ void reset_entity(entity& ent){
    ent.accel_x = 0;
    ent.accel_y = 0;
    ent.angle = 0;
+   ent.gravity = 0;
    ent.active = false;
    ent.bullet = false;
    ent.is_hit = false;
@@ -222,6 +239,19 @@ bool intersects_solid(entity& test){
    return false;
 }
 
+void frame_gravity(entity& ent){
+   if(ent.gravity > 0){
+      ent.y++;
+      ent.gravity--;
+   }
+   else if(ent.gravity < 0){
+      ent.y--;
+      ent.gravity++;
+   }
+   //do nothing on 0
+   
+}
+
 void fire_gun(void* me){
    entity& this_ent = *((entity*)me);
    if(this_ent.is_hit){
@@ -235,6 +265,8 @@ void fire_gun(void* me){
 
 void move_player(void* me){
    entity& this_ent = *((entity*)me);
+   
+   frame_gravity(this_ent);
    
    if(keys & KEY_LEFT){
       if(this_ent.x > 0){
@@ -280,7 +312,7 @@ void draw_logo(){
    entity polis;
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)polis_data[0], POLIS_FRAME_WIDTH * POLIS_FRAME_HEIGHT);
    polis.x = 0;
-   polis.y = 20;//gba is 160 tall, image is 135
+   polis.y = 15;//gba is 160 tall, image is 135
    polis.w = POLIS_FRAME_WIDTH;
    polis.h = POLIS_FRAME_HEIGHT;
    polis.bitmap = bitmap_conv_ram;
@@ -289,9 +321,8 @@ void draw_logo(){
    
    entity logo;
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
-   //need to fix starting location
    logo.x = 70;
-   logo.y = 10;
+   logo.y = 0;
    logo.w = CLEXA_LOGO_FRAME_WIDTH;
    logo.h = CLEXA_LOGO_FRAME_HEIGHT;
    logo.bitmap = bitmap_conv_ram;
@@ -300,17 +331,21 @@ void draw_logo(){
 }
 
 void init_game(){
-   bitmap_conv_ram = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
-   background = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
+   enviroment_map    = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+   bitmap_conv_ram   = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
+   background        = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
    
-   if(background == NULL || bitmap_conv_ram == NULL){
+   if(background == NULL || bitmap_conv_ram == NULL || enviroment_map == NULL){
+      print_bsod("Not enough memory!");
       while(1);//abort
    }
    
    //make background random
+   /*
    for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
       background[cnt] = cust_rand() % 0x7FFF;
    }
+   */
    
    //polis tower
    draw_logo();
@@ -336,6 +371,7 @@ void init_game(){
    PLAYER.bitmap = playermap;
    PLAYER.frame_iterate = move_player;
    
+   /*
    entity& thing1 = get_avail_entity();
    reset_entity(thing1);
    thing1.x = 50;
@@ -347,6 +383,7 @@ void init_game(){
    thing1.index  = 1;
    thing1.bitmap = crosshair;
    thing1.frame_iterate = fire_gun;
+   */
 }
 
 void switch_to_game(){
