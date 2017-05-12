@@ -1,6 +1,8 @@
 #include <gba_video.h>
 #include <gba_input.h>
 #include <gba_systemcalls.h>
+//#include <maxmod.h>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,43 +10,19 @@
 #include "../data/clexalogo.cdata"
 #include "../data/crosshair.cdata"
 #include "../data/polis.cdata"
+#include "../data/cobble.cdata"
+
+#include "../data/leveltest.cdata"
 
 #include "menu.h"
 #include "ugui/ugui.h"//for color defines
 
-typedef struct{
-   uint16_t x;//current x coord
-   uint16_t y;//current y coord
-   uint16_t w;//width
-   uint16_t h;//height
-   struct{
-      uint16_t x;//x start of corrupted background
-      uint16_t y;//y start of corrupted background
-      bool is_dirty;
-   }dirty;
-   int8_t accel_x;//how far to move on x axis per frame -127<->126
-   int8_t accel_y;//how far to move on y axis per frame -127<->126
-   uint16_t angle;//degrees 0<->359
-   int16_t gravity;//negitive gravity sends you upward
-   bool active;//if this is entity is currently in use
-   bool bullet;
-   bool is_hit;
-   bool is_solid;
-   int8_t index;
-   uint16_t* bitmap;
-   void (*frame_iterate)(void* me);
-}entity;
-
-/*
-typedef struct{
-   
-   
-}colision_stat;
-*/
+#include "gametypes.h"
 
 //use framebuffer for now
 static uint16_t *const vram = ((uint16_t*)0x06000000);
 static uint16_t keys;
+//static mm_gba_system gba_music;
 
 #define ENTITYS 20
 #define PLAYER characters[0]
@@ -52,12 +30,13 @@ static uint16_t keys;
 
 uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t  playermap[16 * 16];
+uint16_t  playermap[15 * 16];
 uint16_t  crosshair[16 * 16];
 uint16_t  crosshair2[16 * 16];
+uint16_t  rock_tex_bmp[16 * 16];
+texture   rock_tex;
 
 entity   characters[ENTITYS];
-//uint8_t   enviroment_map[0x12C0];//1bpp map of solid terrain
 uint8_t* enviroment_map;//map of terrain type
 uint8_t  num_active_characters;
 
@@ -74,13 +53,6 @@ entity& get_avail_entity(){
 inline uint8_t get_environ_data(uint16_t x, uint16_t y){
    uint32_t offset = y * SCREEN_WIDTH + x;
    return enviroment_map[offset];
-   /*
-   uint32_t offset = y * SCREEN_WIDTH + x;
-   uint8_t  bitnum = offset % 8;
-   uint32_t bytenum = offset / 8;
-   
-   return enviroment_map[bytenum] & (1 << bitnum);
-   */
 }
 
 void reset_entity(entity& ent){
@@ -133,6 +105,13 @@ void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size){
          //if invisible no need to calculate what shade of invisible :)
          output[cnt] = 0x0000;
       }
+   }
+}
+
+void conv_32bpp_to_terrain(uint8_t* output, uint32_t* data, uint32_t size){
+   for(uint32_t cnt = 0; cnt < size; cnt++){
+      //output[cnt] = data[cnt] & 0xFF;
+      output[cnt] = data[cnt] & 0x01;
    }
 }
 
@@ -209,6 +188,17 @@ bool collision_test(entity& chr1, entity& chr2){
    return false;
 }
 
+bool collision_test_point(entity& chr1, uint16_t x, uint16_t y){
+   if (chr1.x <= x &&
+       chr1.x + chr1.w >= x &&
+       chr1.y <= y &&
+       chr1.h + chr1.y >= y)
+   {
+      return true;
+   }
+   return false;
+}
+
 void test_collisions(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       for(uint8_t cmp = cnt + 1; cmp < ENTITYS; cmp++){
@@ -240,16 +230,14 @@ bool intersects_solid(entity& test){
 }
 
 void frame_gravity(entity& ent){
-   if(ent.gravity > 0){
+   ent.accel_y++;
+   /*
+   uint16_t bottom_x = ent.x + (ent.w / 2);//middle of character
+   uint16_t bottom_y = ent.y + ent.h;//bottom of character
+   if(get_environ_data(bottom_x, bottom_y + 1) == 0){
       ent.y++;
-      ent.gravity--;
    }
-   else if(ent.gravity < 0){
-      ent.y--;
-      ent.gravity++;
-   }
-   //do nothing on 0
-   
+   */
 }
 
 void fire_gun(void* me){
@@ -266,8 +254,9 @@ void fire_gun(void* me){
 void move_player(void* me){
    entity& this_ent = *((entity*)me);
    
-   frame_gravity(this_ent);
+   //frame_gravity(this_ent);
    
+   /*
    if(keys & KEY_LEFT){
       if(this_ent.x > 0){
          this_ent.x--;
@@ -305,6 +294,83 @@ void move_player(void* me){
          }
       }
    }
+   */
+   
+   if(keys & KEY_LEFT){
+      this_ent.accel_x--;
+   }
+   else if(keys & KEY_RIGHT){
+      this_ent.accel_x++;
+   }
+   
+   if(keys & KEY_UP){
+      //cant fly
+      this_ent.accel_y--;
+   }
+   else if(keys & KEY_DOWN){
+      this_ent.accel_y++;
+   }
+   
+   
+   if(this_ent.accel_x > 0){
+      for(int8_t scoot = 0; scoot < this_ent.accel_x; scoot++){
+         if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y + this_ent.h / 2) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y + this_ent.h - 1) != 0x00){
+            break;//cant walk into a wall
+         }
+         this_ent.x++;
+      }
+   }
+   else if(this_ent.accel_x < 0){
+      for(int8_t scoot = 0; scoot > this_ent.accel_x; scoot--){
+         if(get_environ_data(this_ent.x - 1, this_ent.y) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x - 1, this_ent.y + this_ent.h / 2) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x - 1, this_ent.y + this_ent.h - 1) != 0x00){
+            break;//cant walk into a wall
+         }
+         this_ent.x--;
+      }
+   }
+   this_ent.accel_x = 0;
+   
+   if(this_ent.accel_y > 0){
+      for(int8_t scoot = 0; scoot < this_ent.accel_y; scoot++){
+         if(get_environ_data(this_ent.x, this_ent.y + this_ent.h/* + 1*/) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x + this_ent.w / 2, this_ent.y + this_ent.h/* + 1*/) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x + this_ent.w - 1, this_ent.y + this_ent.h/* + 1*/) != 0x00){
+            break;//cant walk into a wall
+         }
+         this_ent.y++;
+      }
+   }
+   else if(this_ent.accel_y < 0){
+      for(int8_t scoot = 0; scoot > this_ent.accel_y; scoot--){
+         if(get_environ_data(this_ent.x, this_ent.y - 1) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x + this_ent.w / 2, this_ent.y - 1) != 0x00){
+            break;//cant walk into a wall
+         }
+         if(get_environ_data(this_ent.x + this_ent.w - 1, this_ent.y - 1) != 0x00){
+            break;//cant walk into a wall
+         }
+         this_ent.y--;
+      }
+   }
+   this_ent.accel_y = 0;
    
 }
 
@@ -319,6 +385,7 @@ void draw_logo(){
    polis.active = true;
    draw_entity_background(polis);
    
+   /*
    entity logo;
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
    logo.x = 70;
@@ -328,6 +395,7 @@ void draw_logo(){
    logo.bitmap = bitmap_conv_ram;
    logo.active = true;
    draw_entity_background(logo);
+   */
 }
 
 void init_game(){
@@ -340,18 +408,22 @@ void init_game(){
       while(1);//abort
    }
    
-   //make background random
-   /*
-   for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
-      background[cnt] = cust_rand() % 0x7FFF;
-   }
-   */
+   conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);
+   //memset(enviroment_map, 0x00, SCREEN_WIDTH * SCREEN_HEIGHT);
+   
+   //make the bottom row solid
+   //memset(enviroment_map + (SCREEN_WIDTH  * (SCREEN_HEIGHT - 1)), 0x01, SCREEN_WIDTH);
+   
+   //gba_music.mixing_mode = MM_MIX_31KHZ;
+   
+   //init music
+   //mmInit(&gba_music);
    
    //polis tower
    draw_logo();
    
    
-   conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 16 * 16);
+   conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 15 * 16);
    conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
    //fired crosshair
@@ -362,16 +434,36 @@ void init_game(){
       reset_entity(characters[cnt]);
    }
    
+   
+   //setup ground texture
+   conv_32bpp_to_16(rock_tex_bmp,  (uint32_t*)cobble_data[0], 16 * 16);
+   rock_tex.w = 16;
+   rock_tex.h = 16;
+   rock_tex.bitmap = rock_tex_bmp;
+   
+   //draw ground
+   for(uint16_t inc_y = 0; inc_y < SCREEN_HEIGHT; inc_y++){
+      for(uint16_t inc_x = 0; inc_x < SCREEN_WIDTH; inc_x++){
+         switch(get_environ_data(inc_x, inc_y)){
+            case 0x00:
+               break;
+            case 0x01:
+               background[inc_y * SCREEN_WIDTH + inc_x] = get_texture_pixel(inc_x, inc_y, rock_tex);
+               break;
+         }
+      }
+   }
+   
+   
    PLAYER.x = 0;
    PLAYER.y = 0;
-   PLAYER.w = 16;
+   PLAYER.w = 15;
    PLAYER.h = 16;
    PLAYER.active = true;
    PLAYER.index = 0;
    PLAYER.bitmap = playermap;
    PLAYER.frame_iterate = move_player;
    
-   /*
    entity& thing1 = get_avail_entity();
    reset_entity(thing1);
    thing1.x = 50;
@@ -383,7 +475,6 @@ void init_game(){
    thing1.index  = 1;
    thing1.bitmap = crosshair;
    thing1.frame_iterate = fire_gun;
-   */
 }
 
 void switch_to_game(){
@@ -395,9 +486,7 @@ void switch_to_game(){
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
    
-   if(keys & KEY_B){
-      draw_logo();
-   }
+   //mmFrame();
 
    test_collisions();
    update_entitys();
