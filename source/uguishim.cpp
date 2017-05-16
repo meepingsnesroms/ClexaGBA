@@ -5,6 +5,7 @@
 #include "ugui/ugui.h"
 #include "runloop.h"
 #include "gameengine.h"
+#include "uguishim.h"
 
 //using 240*160 16bit color, mode 3
 static uint16_t *const vram = ((uint16_t*)0x06000000);
@@ -69,10 +70,10 @@ void bsod(char* text){
    UG_SetBackcolor(C_BLUE);
    UG_FillScreen(C_BLUE);
    UG_PutString(0, 0, text);
-   while(1);
+   while(1);//terminate excution
 }
 
-void Fake_Window_Frame( UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye, UG_COLOR* p ){
+void Fake_Window_Frame(UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye, UG_COLOR* p){
    // Frame 0
    UG_DrawLine(xs, ys  , xe-1, ys  , *p++);
    UG_DrawLine(xs, ys+1, xs  , ye-1, *p++);
@@ -88,4 +89,9 @@ void Fake_Window_Frame( UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye, UG_COLOR* p 
    UG_DrawLine(xs+2, ys+3, xs+2, ye-3, *p++);
    UG_DrawLine(xs+2, ye-2, xe-2, ye-2, *p++);
    UG_DrawLine(xe-2, ys+2, xe-2, ye-3, *p);
+}
+
+void Fake_Window(UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye){
+   UG_FillFrame(xs + 1, ys + 1, xe - 1, ye - 1, C_WINDOW);
+   Fake_Window_Frame(xs, ys, xe, ye, Frame_Colors);
 }

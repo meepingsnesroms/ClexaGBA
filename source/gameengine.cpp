@@ -16,6 +16,7 @@
 
 #include "uguishim.h"
 #include "ugui/ugui.h"//for color defines
+#include "itemmenu.h"
 
 #include "gametypes.h"
 
@@ -255,46 +256,6 @@ void move_player(void* me){
    
    //frame_gravity(this_ent);
    
-   /*
-   if(keys & KEY_LEFT){
-      if(this_ent.x > 0){
-         this_ent.x--;
-         //dont allow moving into solid objects
-         if(intersects_solid(this_ent)){
-            this_ent.x++;
-         }
-      }
-   }
-   else if(keys & KEY_RIGHT){
-      if(this_ent.x + this_ent.w < SCREEN_WIDTH){
-         this_ent.x++;
-         //dont allow moving into solid objects
-         if(intersects_solid(this_ent)){
-            this_ent.x--;
-         }
-      }
-   }
-   
-   if(keys & KEY_UP){
-      if(this_ent.y > 0){
-         this_ent.y--;
-         //dont allow moving into solid objects
-         if(intersects_solid(this_ent)){
-            this_ent.y++;
-         }
-      }
-   }
-   else if(keys & KEY_DOWN){
-      if(this_ent.y + this_ent.h < SCREEN_HEIGHT){
-         this_ent.y++;
-         //dont allow moving into solid objects
-         if(intersects_solid(this_ent)){
-            this_ent.y--;
-         }
-      }
-   }
-   */
-   
    if(keys & KEY_LEFT){
       this_ent.accel_x--;
    }
@@ -397,6 +358,17 @@ void draw_logo(){
    */
 }
 
+static void redraw_screen(){
+   //draw background
+   for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
+      vram[cnt] = background[cnt];
+   }
+   
+   //draw entitys
+   clear_dirty_entitys();
+   render_entitys();
+}
+
 void init_game(){
    enviroment_map    = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
    bitmap_conv_ram   = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
@@ -485,6 +457,10 @@ void run_frame_game(){
    keys = ~(REG_KEYINPUT);
    
    //mmFrame();
+   if(keys & KEY_L){
+      list_items((item*)NULL);//test, will be removed
+      redraw_screen();//the item list corrupts the vram so a full redraw is needed
+   }
 
    test_collisions();
    update_entitys();

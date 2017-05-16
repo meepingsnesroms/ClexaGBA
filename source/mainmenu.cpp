@@ -78,13 +78,14 @@ void draw_menu(){
       switch(render_selected_button){
          case 0:
             //Start button
+            UG_WindowHide(&render_window);
             in_game = true;
             update_window = false;
             switch_to_game();
             break;
          case 1:
             //Options button
-            list_items((item*)NULL);//test, will be removed
+            //list_items((item*)NULL);//test, will be removed
             break;
          default:
             //do nothing

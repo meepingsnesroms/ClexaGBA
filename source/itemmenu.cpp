@@ -22,6 +22,7 @@
 #define ITEM_WIDTH  60
 #define ITEM_HEIGHT 16 //2 pixel margins on top and bottom
 
+#define ITEM_CURSOR_COLOR C_PALE_GOLDEN_ROD
 #define MAX_LIST_SIZE (SCREEN_HEIGHT / ITEM_HEIGHT) //list items shown at once
 
 #define IMAGE_BOX_OFFSET_X 160
@@ -48,7 +49,7 @@ item* list_items(item* items){
    UG_WINDOW   window;
    UG_OBJECT   objects[MAX_ITEMS];
    UG_TEXTBOX  text_entrys[MAX_LIST_SIZE];
-   uint8_t    active_item = 0;
+   uint8_t     active_item = 0;
    
    UG_WindowCreate(&window, objects, MAX_ITEMS, message_cb);
    
@@ -58,7 +59,6 @@ item* list_items(item* items){
    UG_WindowSetYEnd(&window, ITEM_WINDOW_HEIGHT);
    UG_WindowSetStyle(&window, WND_STYLE_HIDE_TITLE | WND_STYLE_3D);
    
-   //UG_WindowSetBackColor(&window, C_SADDLE_BROWN);
    UG_WindowSetForeColor(&window, C_WHITE);
    
    uint16_t current_x = ITEM_LIST_OFFSET_X;
@@ -72,20 +72,27 @@ item* list_items(item* items){
       current_y += ITEM_HEIGHT;
    }
    
-   UG_TextboxSetBackColor(&window, active_item /*id*/, C_SADDLE_BROWN);
+   UG_TextboxSetBackColor(&window, active_item /*id*/, ITEM_CURSOR_COLOR);
    
    UG_WindowShow(&window);
+   
+   //only render this once
+   Fake_Window(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT);
 
    //frame loop
    uint16_t window_background_color = UG_WindowGetBackColor(&window);
    uint8_t old_active_item;
-   bool item_picked = false;
-   while(!item_picked){
+   bool needs_render = true;
+   while(1){
       old_active_item = active_item;
       
       //test buttons
       scanKeys();
       uint16_t keys = keysDown();
+      
+      if(keys & KEY_A){
+         break;//an item was selected
+      }
       
       //top of the list is 0, so going up means subtracting not adding
       if(keys & KEY_UP){
@@ -99,18 +106,25 @@ item* list_items(item* items){
       //update gui
       if(old_active_item != active_item){
          UG_TextboxSetBackColor(&window, old_active_item /*id*/, window_background_color);
-         UG_TextboxSetBackColor(&window, active_item /*id*/, C_SADDLE_BROWN);
+         UG_TextboxSetBackColor(&window, active_item /*id*/, ITEM_CURSOR_COLOR);
+         needs_render = true;
       }
       
-      UG_Update();
-      
-      //test, locating best image image offset
-      //UG_DrawFrame(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT, C_GREEN);
-      Fake_Window_Frame(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT, Frame_Colors);
+      if(needs_render){
+         UG_Update();
+         
+         //draw the item
+         
+         needs_render = false;
+      }
       
       //wait for next frame
       VBlankIntrWait();
    }
    
-   return (item*)NULL;//return selected item
+   //destroy the window to prevent use after free on return from function
+   UG_WindowDelete(&window);
+   
+   return (item*)NULL;//return fake item
+   //return &items[active_item];//return selected item
 }
