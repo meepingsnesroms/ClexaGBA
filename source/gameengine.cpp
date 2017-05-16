@@ -14,7 +14,7 @@
 
 #include "../data/leveltest.cdata"
 
-#include "menu.h"
+#include "uguishim.h"
 #include "ugui/ugui.h"//for color defines
 
 #include "gametypes.h"
@@ -46,8 +46,7 @@ entity& get_avail_entity(){
          return characters[cnt];
       }
    }
-   print_bsod("Entity overflow!");
-   while(1);
+   bsod("Entity overflow!");
 }
 
 inline uint8_t get_environ_data(uint16_t x, uint16_t y){
@@ -404,8 +403,7 @@ void init_game(){
    background        = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
    
    if(background == NULL || bitmap_conv_ram == NULL || enviroment_map == NULL){
-      print_bsod("Not enough memory!");
-      while(1);//abort
+      bsod("Not enough memory!");
    }
    
    conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);

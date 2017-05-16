@@ -1,46 +1,25 @@
-#include <gba_video.h>
+#include <gba_video.h>//for SCREEN_* macros
 #include <gba_input.h>
 
-#include "ugui/ugui.h"
+#include "uguishim.h"
 #include "runloop.h"
 #include "gameengine.h"
+#include "itemmenu.h"
 
 #define MAX_OBJECTS 50
 #define NUM_BUTTONS 2
 
-//using 240*160 16bit color, mode 3
-static uint16_t *const vram = ((uint16_t*)0x06000000);
-UG_GUI      renderer;
 UG_WINDOW   render_window;
 UG_OBJECT   render_objects[MAX_OBJECTS];
 UG_BUTTON   render_buttons[NUM_BUTTONS];
 uint8_t     render_selected_button;
 
-static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
-   uint16_t fixed = 0;//gba has red and blue swapped
-   fixed |= color >> 11;//red
-   fixed |= color << 10;//blue
-   fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
-   vram[x + (y * SCREEN_WIDTH)] = fixed;
-}
-
 static void message_cb(UG_MESSAGE* msg_ptr){
    //do nothing
 }
 
-void print_bsod(char* text){
-   UG_SetForecolor(C_WHITE);
-   UG_SetBackcolor(C_BLUE);
-   UG_FillScreen(C_BLUE);
-   UG_PutString(0, 0, text);
-}
-
 void init_menu(){
-   UG_Init(&renderer, gba_plot_pixel, SCREEN_WIDTH, SCREEN_HEIGHT);
    UG_WindowCreate(&render_window, render_objects, MAX_OBJECTS, message_cb);
-   
-   
-   UG_FontSelect(&FONT_6X8);
    
    UG_WindowSetXStart(&render_window, 0);
    UG_WindowSetYStart(&render_window, 0);
@@ -95,10 +74,22 @@ void draw_menu(){
    }
    
    //select button
-   if((keys & KEY_A) && (render_selected_button == 0)){
-      in_game = true;
-      update_window = false;
-      switch_to_game();
+   if(keys & KEY_A){
+      switch(render_selected_button){
+         case 0:
+            //Start button
+            in_game = true;
+            update_window = false;
+            switch_to_game();
+            break;
+         case 1:
+            //Options button
+            list_items((item*)NULL);//test, will be removed
+            break;
+         default:
+            //do nothing
+            break;
+      }
    }
 
    if(update_window){

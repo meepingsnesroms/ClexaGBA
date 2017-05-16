@@ -1,5 +1,5 @@
 #include <gba_input.h>
-#include "menu.h"
+#include "mainmenu.h"
 #include "gameengine.h"
 
 bool in_game = false;

@@ -8,7 +8,8 @@
 
 #include "runloop.h"
 #include "gameengine.h"
-#include "menu.h"
+#include "uguishim.h"
+#include "mainmenu.h"
 
 //---------------------------------------------------------------------------------
 // Program entry point
@@ -25,6 +26,9 @@ int main(void) {
    
    // set framebuffer mode
    SetMode(MODE_3 | BG2_ON /* 240*160 16bit color */);
+   
+   // setup ugui
+   init_ugui();
    
    // setup menu structs
    init_menu();
