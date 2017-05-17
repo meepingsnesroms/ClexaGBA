@@ -23,6 +23,7 @@
 #define ITEM_HEIGHT 16 //2 pixel margins on top and bottom
 
 #define ITEM_CURSOR_COLOR C_PALE_GOLDEN_ROD
+#define ITEM_TEXT_COLOR   C_WHITE
 #define MAX_LIST_SIZE (SCREEN_HEIGHT / ITEM_HEIGHT) //list items shown at once
 
 #define IMAGE_BOX_OFFSET_X 160
@@ -36,11 +37,11 @@ static void message_cb(UG_MESSAGE* msg_ptr){
 
 item* list_items(item* items){
    
-#if 0//test items
+#if 1//test items
    item test_items[20];
    char data_str[20];
    for(uint8_t cnt = 0; cnt < 20; cnt++){
-      strcpy(test_items[cnt].name, "FakeItem");
+      strcpy(test_items[cnt].name, "FkItem");
       strcat(test_items[cnt].name, itoa(cnt, data_str, 10));
    }
    items = test_items;
@@ -68,6 +69,7 @@ item* list_items(item* items){
       UG_TextboxSetFont(&window, cnt /*id*/, &FONT_8X12);
       UG_TextboxSetAlignment(&window, cnt /*id*/, ALIGN_CENTER_LEFT);
       UG_TextboxSetText(&window, cnt /*id*/, items[cnt].name);
+      //UG_TextboxSetForeColor(&window, cnt /*id*/, ITEM_TEXT_COLOR);
       UG_TextboxShow(&window, cnt /*id*/);
       current_y += ITEM_HEIGHT;
    }
@@ -125,6 +127,6 @@ item* list_items(item* items){
    //destroy the window to prevent use after free on return from function
    UG_WindowDelete(&window);
    
-   //return (item*)NULL;//return fake item
-   return &items[active_item];//return selected item
+   return (item*)NULL;//return fake item
+   //return &items[active_item];//return selected item
 }
