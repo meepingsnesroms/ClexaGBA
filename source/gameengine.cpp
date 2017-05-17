@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../data/clarke.cdata"
+#include "assets.h"
+
+//#include "../data/clarke.cdata"
 #include "../data/clexalogo.cdata"
 #include "../data/crosshair.cdata"
 #include "../data/polis.cdata"
-#include "../data/cobble.cdata"
+//#include "../data/cobble.cdata"
 
 #include "../data/leveltest.cdata"
 
@@ -31,13 +33,14 @@ static uint16_t keys;
 
 uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t  playermap[15 * 16];
+//uint16_t  playermap[15 * 16];
 uint16_t  crosshair[16 * 16];
 uint16_t  crosshair2[16 * 16];
-uint16_t  rock_tex_bmp[16 * 16];
+//uint16_t  rock_tex_bmp[16 * 16];
 texture   rock_tex;
 
 entity   characters[ENTITYS];
+item     currently_held_items[20];
 uint8_t* enviroment_map;//map of terrain type
 uint8_t  num_active_characters;
 
@@ -393,7 +396,7 @@ void init_game(){
    draw_logo();
    
    
-   conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 15 * 16);
+   //conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 15 * 16);
    conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
    //fired crosshair
@@ -406,7 +409,7 @@ void init_game(){
    
    
    //setup ground texture
-   conv_32bpp_to_16(rock_tex_bmp,  (uint32_t*)cobble_data[0], 16 * 16);
+   //conv_32bpp_to_16(rock_tex_bmp,  (uint32_t*)cobble_data[0], 16 * 16);
    rock_tex.w = 16;
    rock_tex.h = 16;
    rock_tex.bitmap = rock_tex_bmp;

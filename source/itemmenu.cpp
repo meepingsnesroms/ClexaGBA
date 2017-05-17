@@ -36,11 +36,11 @@ static void message_cb(UG_MESSAGE* msg_ptr){
 
 item* list_items(item* items){
    
-#if 1//test items
+#if 0//test items
    item test_items[20];
    char data_str[20];
    for(uint8_t cnt = 0; cnt < 20; cnt++){
-      strcpy(test_items[cnt].name, "fkitm");
+      strcpy(test_items[cnt].name, "FakeItem");
       strcat(test_items[cnt].name, itoa(cnt, data_str, 10));
    }
    items = test_items;
@@ -125,6 +125,6 @@ item* list_items(item* items){
    //destroy the window to prevent use after free on return from function
    UG_WindowDelete(&window);
    
-   return (item*)NULL;//return fake item
-   //return &items[active_item];//return selected item
+   //return (item*)NULL;//return fake item
+   return &items[active_item];//return selected item
 }
