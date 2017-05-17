@@ -3,6 +3,12 @@
 #include <stdint.h>
 
 typedef struct{
+   uint16_t w;//width
+   uint16_t h;//height
+   uint16_t* bitmap;
+}texture;
+
+typedef struct{
    uint16_t x;//current x coord
    uint16_t y;//current y coord
    uint16_t w;//width
@@ -21,17 +27,28 @@ typedef struct{
    bool is_hit;
    bool is_solid;
    int8_t index;
-   uint16_t* bitmap;
+   int8_t sprite_x_offset;
+   int8_t sprite_y_offset;
+   texture sprite;
    void (*frame_iterate)(void* me);
 }entity;
 
 typedef struct{
    uint16_t w;
    uint16_t h;
+   uint8_t frames;
+   uint16_t** bitmaps;
+}animation;
+
+typedef struct{
+   uint16_t north;
+   uint16_t south;
+   uint16_t east;
+   uint16_t west;
+   
    uint16_t* bitmap;
-}texture;
-
-
+   uint8_t*  collison_map;
+}level_map;
 
 
 

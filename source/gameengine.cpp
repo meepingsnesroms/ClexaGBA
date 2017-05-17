@@ -8,17 +8,14 @@
 
 #include "assets.h"
 
-//#include "../data/clarke.cdata"
 #include "../data/clexalogo.cdata"
 #include "../data/crosshair.cdata"
 #include "../data/polis.cdata"
-//#include "../data/cobble.cdata"
 
 #include "../data/leveltest.cdata"
 
 #include "uguishim.h"
-#include "ugui/ugui.h"//for color defines
-#include "itemmenu.h"
+#include "inventory.h"
 
 #include "gametypes.h"
 
@@ -33,14 +30,10 @@ static uint16_t keys;
 
 uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
-//uint16_t  playermap[15 * 16];
 uint16_t  crosshair[16 * 16];
 uint16_t  crosshair2[16 * 16];
-//uint16_t  rock_tex_bmp[16 * 16];
-texture   rock_tex;
 
 entity   characters[ENTITYS];
-item     currently_held_items[20];
 uint8_t* enviroment_map;//map of terrain type
 uint8_t  num_active_characters;
 
@@ -75,7 +68,9 @@ void reset_entity(entity& ent){
    ent.is_hit = false;
    ent.is_solid = false;
    ent.index  = -1;
-   ent.bitmap = NULL;
+   ent.sprite_x_offset = 0;
+   ent.sprite_y_offset = 0;
+   ent.sprite = {0, 0, NULL};
    
    //callback
    ent.frame_iterate = NULL;
@@ -129,39 +124,49 @@ void invert_color(uint16_t* data, uint32_t size){
 
 void restore_background(entity& ent){
    if(!ent.dirty.is_dirty)return;
-   for(uint16_t yinc = 0; yinc < ent.h; yinc++){
-      for(uint16_t xinc = 0; xinc < ent.w; xinc++){
+   for(uint16_t yinc = 0; yinc < ent.sprite.h; yinc++){
+      for(uint16_t xinc = 0; xinc < ent.sprite.w; xinc++){
          vram[ent.dirty.x + xinc + ((ent.dirty.y + yinc) * SCREEN_WIDTH)] = background[ent.dirty.x + xinc + ((ent.dirty.y + yinc) * SCREEN_WIDTH)];
       }
    }
    ent.dirty.is_dirty = false;
 }
 
-void draw_entity(entity& ent){
-   for(uint16_t yinc = 0; yinc < ent.h; yinc++){
-      for(uint16_t xinc = 0; xinc < ent.w; xinc++){
+void draw_texture(uint16_t x, uint16_t y, texture& tex){
+   if(tex.bitmap == NULL)return;
+   for(uint16_t yinc = 0; yinc < tex.h; yinc++){
+      for(uint16_t xinc = 0; xinc < tex.w; xinc++){
          //check "is visible" bit
-         uint16_t color = ent.bitmap[xinc + (yinc * ent.w)];
+         uint16_t color = tex.bitmap[xinc + (yinc * tex.w)];
          if(color & 0x8000){
-            vram[ent.x + xinc + ((ent.y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
+            vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
          }
       }
    }
-   ent.dirty.x = ent.x;
-   ent.dirty.y = ent.y;
+}
+
+void draw_texture_background(uint16_t x, uint16_t y, texture& tex){
+   if(tex.bitmap == NULL)return;
+   for(uint16_t yinc = 0; yinc < tex.h; yinc++){
+      for(uint16_t xinc = 0; xinc < tex.w; xinc++){
+         //check "is visible" bit
+         uint16_t color = tex.bitmap[xinc + (yinc * tex.w)];
+         if(color & 0x8000){
+            background[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
+         }
+      }
+   }
+}
+
+void draw_entity(entity& ent){
+   draw_texture(ent.x + ent.sprite_x_offset, ent.y + ent.sprite_y_offset, ent.sprite);
+   ent.dirty.x = ent.x + ent.sprite_x_offset;
+   ent.dirty.y = ent.y + ent.sprite_y_offset;
    ent.dirty.is_dirty = true;
 }
 
 void draw_entity_background(entity& ent){
-   for(uint16_t yinc = 0; yinc < ent.h; yinc++){
-      for(uint16_t xinc = 0; xinc < ent.w; xinc++){
-         //check "is visible" bit
-         uint16_t color = ent.bitmap[xinc + (yinc * ent.w)];
-         if(color & 0x8000){
-            background[ent.x + xinc + ((ent.y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
-         }
-      }
-   }
+   draw_texture_background(ent.x + ent.sprite_x_offset, ent.y + ent.sprite_y_offset, ent.sprite);
 }
 
 void render_entitys(){
@@ -178,6 +183,17 @@ void clear_dirty_entitys(){
          restore_background(characters[cnt]);
       }
    }
+}
+
+void redraw_screen(){
+   //draw background
+   for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
+      vram[cnt] = background[cnt];
+   }
+   
+   //draw entitys
+   clear_dirty_entitys();
+   render_entitys();
 }
 
 bool collision_test(entity& chr1, entity& chr2){
@@ -234,23 +250,16 @@ bool intersects_solid(entity& test){
 
 void frame_gravity(entity& ent){
    ent.accel_y++;
-   /*
-   uint16_t bottom_x = ent.x + (ent.w / 2);//middle of character
-   uint16_t bottom_y = ent.y + ent.h;//bottom of character
-   if(get_environ_data(bottom_x, bottom_y + 1) == 0){
-      ent.y++;
-   }
-   */
 }
 
 void fire_gun(void* me){
    entity& this_ent = *((entity*)me);
    if(this_ent.is_hit){
-      this_ent.bitmap = crosshair2;
+      this_ent.sprite.bitmap = crosshair2;
       this_ent.is_hit = false;
    }
    else{
-      this_ent.bitmap = crosshair;
+      this_ent.sprite.bitmap = crosshair;
    }
 }
 
@@ -258,6 +267,12 @@ void move_player(void* me){
    entity& this_ent = *((entity*)me);
    
    //frame_gravity(this_ent);
+   
+   if(keys & KEY_L){
+      open_inventory();
+      redraw_screen();//the item list corrupts the vram so a full redraw is needed
+   }
+   
    
    if(keys & KEY_LEFT){
       this_ent.accel_x--;
@@ -339,37 +354,28 @@ void move_player(void* me){
 
 void draw_logo(){
    entity polis;
+   reset_entity(polis);
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)polis_data[0], POLIS_FRAME_WIDTH * POLIS_FRAME_HEIGHT);
    polis.x = 0;
    polis.y = 15;//gba is 160 tall, image is 135
    polis.w = POLIS_FRAME_WIDTH;
    polis.h = POLIS_FRAME_HEIGHT;
-   polis.bitmap = bitmap_conv_ram;
+   polis.sprite = {POLIS_FRAME_WIDTH, POLIS_FRAME_HEIGHT, bitmap_conv_ram};
    polis.active = true;
    draw_entity_background(polis);
    
    /*
    entity logo;
+   reset_entity(logo);
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
    logo.x = 70;
    logo.y = 0;
    logo.w = CLEXA_LOGO_FRAME_WIDTH;
    logo.h = CLEXA_LOGO_FRAME_HEIGHT;
-   logo.bitmap = bitmap_conv_ram;
+   logo.sprite = {CLEXA_LOGO_FRAME_WIDTH, CLEXA_LOGO_FRAME_HEIGHT, bitmap_conv_ram};
    logo.active = true;
    draw_entity_background(logo);
    */
-}
-
-static void redraw_screen(){
-   //draw background
-   for(uint32_t cnt = 0; cnt < SCREEN_WIDTH * SCREEN_HEIGHT; cnt++){
-      vram[cnt] = background[cnt];
-   }
-   
-   //draw entitys
-   clear_dirty_entitys();
-   render_entitys();
 }
 
 void init_game(){
@@ -382,10 +388,6 @@ void init_game(){
    }
    
    conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);
-   //memset(enviroment_map, 0x00, SCREEN_WIDTH * SCREEN_HEIGHT);
-   
-   //make the bottom row solid
-   //memset(enviroment_map + (SCREEN_WIDTH  * (SCREEN_HEIGHT - 1)), 0x01, SCREEN_WIDTH);
    
    //gba_music.mixing_mode = MM_MIX_31KHZ;
    
@@ -395,8 +397,6 @@ void init_game(){
    //polis tower
    draw_logo();
    
-   
-   //conv_32bpp_to_16(playermap, (uint32_t*)clarke_data[0], 15 * 16);
    conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
    //fired crosshair
@@ -406,13 +406,6 @@ void init_game(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       reset_entity(characters[cnt]);
    }
-   
-   
-   //setup ground texture
-   //conv_32bpp_to_16(rock_tex_bmp,  (uint32_t*)cobble_data[0], 16 * 16);
-   rock_tex.w = 16;
-   rock_tex.h = 16;
-   rock_tex.bitmap = rock_tex_bmp;
    
    //draw ground
    for(uint16_t inc_y = 0; inc_y < SCREEN_HEIGHT; inc_y++){
@@ -428,13 +421,15 @@ void init_game(){
    }
    
    
-   PLAYER.x = 0;
-   PLAYER.y = 0;
-   PLAYER.w = 15;
-   PLAYER.h = 16;
+   PLAYER.x = SCREEN_WIDTH  / 2;
+   PLAYER.y = SCREEN_HEIGHT / 2;
+   PLAYER.w = 15 - 4;
+   PLAYER.h = 16 - 4;
    PLAYER.active = true;
    PLAYER.index = 0;
-   PLAYER.bitmap = playermap;
+   PLAYER.sprite_x_offset = -2;
+   PLAYER.sprite_y_offset = -2;
+   PLAYER.sprite = {15, 16, clarke_forward};
    PLAYER.frame_iterate = move_player;
    
    entity& thing1 = get_avail_entity();
@@ -446,7 +441,7 @@ void init_game(){
    thing1.active = true;
    thing1.is_solid = true;//just a test
    thing1.index  = 1;
-   thing1.bitmap = crosshair;
+   thing1.sprite = {16, 16, crosshair};
    thing1.frame_iterate = fire_gun;
 }
 
@@ -460,10 +455,6 @@ void run_frame_game(){
    keys = ~(REG_KEYINPUT);
    
    //mmFrame();
-   if(keys & KEY_L){
-      list_items((item*)NULL);//test, will be removed
-      redraw_screen();//the item list corrupts the vram so a full redraw is needed
-   }
 
    test_collisions();
    update_entitys();

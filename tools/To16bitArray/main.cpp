@@ -30,7 +30,27 @@ uint16_t fix_32bit_color(uint32_t old_color){
    return finished;
 }
 
-string parse(string data){
+void better_replace(string& str, uint64_t start, string to_find, string replacement){
+	str.replace(str.find(to_find,start), to_find.length(), replacement);
+}
+
+string make_header(string data){
+	string working_data;
+	uint64_t first_bracket = 0;
+
+	//extract old header
+	first_bracket = data.find("{",first_bracket);
+	if(first_bracket == string::npos)abort();
+	working_data = data.substr(0,first_bracket);
+
+	//patch header
+	better_replace(working_data, 0, "uint32_t", "uint16_t");
+	better_replace(working_data, 0, "_data[1]", "_data");
+
+	return working_data;
+}
+
+string extract_data(string data){
    string output;
    uint64_t offset = 0;
    
@@ -44,7 +64,21 @@ string parse(string data){
       output += " ,";
    }
    
+   //remove the " ," on the last entry
+   output.erase(output.end() - 2, output.end());
+
    return output;
+}
+
+string make_16bit_array(string data){
+	string output;
+
+	output += make_header(data);
+	output += "{\n";//start array
+	output += extract_data(data);
+	output += "\n};";//close array
+
+	return output;
 }
 
 int main(int argc, char *argv[])
@@ -54,7 +88,15 @@ int main(int argc, char *argv[])
 			std::ifstream infile(argv[1]);
 			std::stringstream buffer;
 			buffer << infile.rdbuf();
-			string cleandata = parse(buffer.str());
+			string cleandata = make_16bit_array(buffer.str());
+
+			//output to file
+			string output_name = argv[1];
+			output_name += ".out";
+			std::ofstream ofs(output_name, std::ofstream::out | std::ofstream::trunc);
+			ofs << cleandata;
+			ofs.close();
+
 			cout << cleandata << endl;
 		}
 	}else cout << "Invalid Prams" << endl;

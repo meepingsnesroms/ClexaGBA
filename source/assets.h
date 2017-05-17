@@ -2,5 +2,7 @@
 
 #include <stdint.h>
 
-extern uint16_t  playermap[];
-extern uint16_t  rock_tex_bmp[];
+#include "gametypes.h"
+
+extern uint16_t  clarke_forward[];
+extern texture  rock_tex;

@@ -3,9 +3,6 @@
 #include <gba_interrupt.h>//for VBlankIntrWait()
 #include <gba_systemcalls.h>//for VBlankIntrWait()
 
-#include <string.h>//strcat, strcpy
-#include <stdlib.h>//itoa
-
 #include "itemmenu.h"
 #include "uguishim.h"
 #include "ugui/ugui.h"
@@ -35,18 +32,7 @@ static void message_cb(UG_MESSAGE* msg_ptr){
    //do nothing
 }
 
-item* list_items(item* items){
-   
-#if 1//test items
-   item test_items[20];
-   char data_str[20];
-   for(uint8_t cnt = 0; cnt < 20; cnt++){
-      strcpy(test_items[cnt].name, "FkItem");
-      strcat(test_items[cnt].name, itoa(cnt, data_str, 10));
-   }
-   items = test_items;
-#endif
-   
+item* list_items(item* items){   
    UG_WINDOW   window;
    UG_OBJECT   objects[MAX_ITEMS];
    UG_TEXTBOX  text_entrys[MAX_LIST_SIZE];
@@ -127,6 +113,5 @@ item* list_items(item* items){
    //destroy the window to prevent use after free on return from function
    UG_WindowDelete(&window);
    
-   return (item*)NULL;//return fake item
-   //return &items[active_item];//return selected item
+   return &items[active_item];//return selected item
 }
