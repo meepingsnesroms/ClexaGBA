@@ -45,6 +45,7 @@ string make_header(string data){
 
 	//patch header
 	better_replace(working_data, 0, "uint32_t", "uint16_t");
+	better_replace(working_data, 0, "static", "/*static*/");
 	better_replace(working_data, 0, "_data[1]", "_data");
 
 	return working_data;

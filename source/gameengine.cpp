@@ -44,6 +44,7 @@ entity& get_avail_entity(){
       }
    }
    bsod("Entity overflow!");
+   return PLAYER;//this is for the compiler warning only, there is no coming back after bsod
 }
 
 inline uint8_t get_environ_data(uint16_t x, uint16_t y){
@@ -202,17 +203,21 @@ void move_player(void* me){
    
    if(keys & KEY_LEFT){
       this_ent.accel_x--;
+      this_ent.sprite.bitmap = clarke_left_data;
    }
    else if(keys & KEY_RIGHT){
       this_ent.accel_x++;
+      this_ent.sprite.bitmap = clarke_right_data;
    }
    
    if(keys & KEY_UP){
       //cant fly
       this_ent.accel_y--;
+      this_ent.sprite.bitmap = clarke_back_data;
    }
    else if(keys & KEY_DOWN){
       this_ent.accel_y++;
+      this_ent.sprite.bitmap = clarke_front_data;
    }
    
    
@@ -354,7 +359,7 @@ void init_game(){
    PLAYER.index = 0;
    PLAYER.sprite_x_offset = -2;
    PLAYER.sprite_y_offset = -2;
-   PLAYER.sprite = {15, 16, clarke_forward};
+   PLAYER.sprite = {16, 16, clarke_front_data};
    PLAYER.frame_iterate = move_player;
    
    entity& thing1 = get_avail_entity();
