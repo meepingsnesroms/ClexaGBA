@@ -37,6 +37,8 @@ entity   characters[ENTITYS];
 uint8_t* enviroment_map;//map of terrain type
 uint8_t  num_active_characters;
 
+bool have_nightblood;
+
 entity& get_avail_entity(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       if(!characters[cnt].active){
@@ -47,9 +49,26 @@ entity& get_avail_entity(){
    return PLAYER;//this is for the compiler warning only, there is no coming back after bsod
 }
 
+inline void set_environ_data(uint16_t x, uint16_t y, uint8_t data){
+   uint32_t offset = y * SCREEN_WIDTH + x;
+   enviroment_map[offset] = data;
+}
+
 inline uint8_t get_environ_data(uint16_t x, uint16_t y){
    uint32_t offset = y * SCREEN_WIDTH + x;
    return enviroment_map[offset];
+}
+
+void border_wall(){
+   for(uint16_t cnt = 0; cnt < SCREEN_WIDTH; cnt++){
+      set_environ_data(cnt, 0, 0x01);
+      set_environ_data(cnt, SCREEN_HEIGHT - 1, 0x01);
+   }
+   
+   for(uint16_t cnt = 0; cnt < SCREEN_HEIGHT; cnt++){
+      set_environ_data(0, cnt, 0x01);
+      set_environ_data(SCREEN_WIDTH - 1, cnt, 0x01);
+   }
 }
 
 void reset_entity(entity& ent){
@@ -68,6 +87,7 @@ void reset_entity(entity& ent){
    ent.bullet = false;
    ent.is_hit = false;
    ent.is_solid = false;
+   ent.health = 100;
    ent.index  = -1;
    ent.sprite_x_offset = 0;
    ent.sprite_y_offset = 0;
@@ -112,6 +132,12 @@ void clear_dirty_entitys(){
          restore_background(characters[cnt]);
       }
    }
+}
+
+void update_health_bar(){
+   restore_background(2, 2, 100 + 2 + 1, 5 + 2 + 1);
+   UG_DrawRoundFrame(2, 2, 2 + 100 + 2, 2 + 5 + 2, 3, C_GOLDEN_ROD);
+   UG_FillFrame(3, 3, 3 + PLAYER.health, 3 + 5, have_nightblood ? C_BLACK : C_DARK_RED);//maybe C_DARK_GRAY instead of C_BLACK
 }
 
 void redraw_screen(){
@@ -175,10 +201,6 @@ bool intersects_solid(entity& test){
    return false;
 }
 
-void frame_gravity(entity& ent){
-   ent.accel_y++;
-}
-
 void fire_gun(void* me){
    entity& this_ent = *((entity*)me);
    if(this_ent.is_hit){
@@ -193,11 +215,14 @@ void fire_gun(void* me){
 void move_player(void* me){
    entity& this_ent = *((entity*)me);
    
-   //frame_gravity(this_ent);
-   
    if(keys & KEY_L){
       open_inventory();
       redraw_screen();//the item list corrupts the vram so a full redraw is needed
+   }
+   
+   //debug only!
+   if(keys & KEY_R){
+      have_nightblood = true;
    }
    
    
@@ -319,6 +344,9 @@ void init_game(){
    
    conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);
    
+   //prevents leaving the screen
+   border_wall();
+   
    //gba_music.mixing_mode = MM_MIX_31KHZ;
    
    //init music
@@ -350,6 +378,8 @@ void init_game(){
       }
    }
    
+   //effects health bar rendering
+   have_nightblood = false;
    
    PLAYER.x = SCREEN_WIDTH  / 2;
    PLAYER.y = SCREEN_HEIGHT / 2;
@@ -364,8 +394,10 @@ void init_game(){
    
    entity& thing1 = get_avail_entity();
    reset_entity(thing1);
-   thing1.x = 50;
-   thing1.y = 50;
+   //thing1.x = 50;
+   //thing1.y = 50;
+   thing1.x = 0;
+   thing1.y = 0;
    thing1.w = 16;
    thing1.h = 16;
    thing1.active = true;
@@ -388,4 +420,5 @@ void run_frame_game(){
    update_entitys();
    clear_dirty_entitys();
    render_entitys();
+   update_health_bar();
 }

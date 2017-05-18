@@ -31,21 +31,11 @@ UG_COLOR Frame_Colors[] =
    0x9D13,
 };
 
-/*
-static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
-   uint16_t fixed = 0;//gba has red and blue swapped
-   fixed |= color >> 11;//red
-   fixed |= color << 10;//blue
-   fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
-   vram[x + (y * SCREEN_WIDTH)] = fixed;
-}
-*/
-
 static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
    //gba has red and blue swapped, so it is actually bgr16
-   uint16_t fixed = color >> 11;//red
-   fixed |= color << 10;//blue
-   fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
+   uint16_t fixed = color >> 11;    //red
+   fixed |= color << 10;            //blue
+   fixed |= (color & 0x07C0) >> 1;  //green, use top 5 of 6 green bits
    vram[x + (y * SCREEN_WIDTH)] = fixed;
 }
 
@@ -57,11 +47,6 @@ static UG_RESULT gba_fill_square(int16_t x, int16_t y, int16_t x2, int16_t y2, u
 
    for(int16_t cnt_y = y; cnt_y <= y2; cnt_y++){
       memset16(&vram[x + (cnt_y * SCREEN_WIDTH)], fixed, x2 - x + 1);
-      /*
-      for(int16_t cnt_x = x; cnt_x <= x2; cnt_x++){
-         vram[cnt_x + (cnt_y * SCREEN_WIDTH)] = fixed;
-      }
-      */
    }
    
    return UG_RESULT_OK;
@@ -75,10 +60,7 @@ static UG_RESULT gba_draw_line(UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_CO
    fixed |= (c & 0x07C0) >> 1;//green, use top 5 of 6 green bits
    
    if(y1 == y2){
-      while(x1 <= x2){
-         vram[x1 + (y1 * SCREEN_WIDTH)] = fixed;
-         x1++;
-      }
+      memset16(&vram[x1 + (y1 * SCREEN_WIDTH)], fixed, x2 - x1 + 1);
       return UG_RESULT_OK;
    }
    
@@ -103,7 +85,6 @@ static UG_RESULT gba_draw_line(UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_CO
    drawx = x1;
    drawy = y1;
    
-   //gui->pset(drawx, drawy,c);
    vram[drawx + (drawy * SCREEN_WIDTH)] = fixed;
    
    if( dxabs >= dyabs )
@@ -117,7 +98,6 @@ static UG_RESULT gba_draw_line(UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_CO
             drawy += sgndy;
          }
          drawx += sgndx;
-         //gui->pset(drawx, drawy,c);
          vram[drawx + (drawy * SCREEN_WIDTH)] = fixed;
       }
    }
@@ -132,7 +112,6 @@ static UG_RESULT gba_draw_line(UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_CO
             drawx += sgndx;
          }
          drawy += sgndy;
-         //gui->pset(drawx, drawy,c);
          vram[drawx + (drawy * SCREEN_WIDTH)] = fixed;
       }
    }  

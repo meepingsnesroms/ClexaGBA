@@ -26,6 +26,7 @@ typedef struct{
    bool bullet;
    bool is_hit;
    bool is_solid;
+   uint16_t health;
    int8_t index;
    int8_t sprite_x_offset;
    int8_t sprite_y_offset;
