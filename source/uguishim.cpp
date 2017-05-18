@@ -6,6 +6,7 @@
 #include "runloop.h"
 #include "gameengine.h"
 #include "uguishim.h"
+#include "speedhacks.h"
 
 //using 240*160 16bit color, mode 3
 static uint16_t *const vram = ((uint16_t*)0x06000000);
@@ -55,22 +56,98 @@ static UG_RESULT gba_fill_square(int16_t x, int16_t y, int16_t x2, int16_t y2, u
    fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
 
    for(int16_t cnt_y = y; cnt_y <= y2; cnt_y++){
+      memset16(&vram[x + (cnt_y * SCREEN_WIDTH)], fixed, x2 - x + 1);
+      /*
       for(int16_t cnt_x = x; cnt_x <= x2; cnt_x++){
          vram[cnt_x + (cnt_y * SCREEN_WIDTH)] = fixed;
       }
+      */
    }
    
+   return UG_RESULT_OK;
+}
+
+static UG_RESULT gba_draw_line(UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c){
+   //fix color
+   uint16_t fixed = 0;//gba has red and blue swapped
+   fixed |= c >> 11;//red
+   fixed |= c << 10;//blue
+   fixed |= (c & 0x07C0) >> 1;//green, use top 5 of 6 green bits
+   
+   if(y1 == y2){
+      while(x1 <= x2){
+         vram[x1 + (y1 * SCREEN_WIDTH)] = fixed;
+         x1++;
+      }
+      return UG_RESULT_OK;
+   }
+   
+   if(x1 == x2){
+      while(y1 <= y2){
+         vram[x1 + (y1 * SCREEN_WIDTH)] = fixed;
+         y1++;
+      }
+      return UG_RESULT_OK;
+   }
+   
+   UG_S16 n, dx, dy, sgndx, sgndy, dxabs, dyabs, x, y, drawx, drawy;
+   
+   dx = x2 - x1;
+   dy = y2 - y1;
+   dxabs = (dx>0)?dx:-dx;
+   dyabs = (dy>0)?dy:-dy;
+   sgndx = (dx>0)?1:-1;
+   sgndy = (dy>0)?1:-1;
+   x = dyabs >> 1;
+   y = dxabs >> 1;
+   drawx = x1;
+   drawy = y1;
+   
+   //gui->pset(drawx, drawy,c);
+   vram[drawx + (drawy * SCREEN_WIDTH)] = fixed;
+   
+   if( dxabs >= dyabs )
+   {
+      for( n=0; n<dxabs; n++ )
+      {
+         y += dyabs;
+         if( y >= dxabs )
+         {
+            y -= dxabs;
+            drawy += sgndy;
+         }
+         drawx += sgndx;
+         //gui->pset(drawx, drawy,c);
+         vram[drawx + (drawy * SCREEN_WIDTH)] = fixed;
+      }
+   }
+   else
+   {
+      for( n=0; n<dyabs; n++ )
+      {
+         x += dxabs;
+         if( x >= dyabs )
+         {
+            x -= dyabs;
+            drawx += sgndx;
+         }
+         drawy += sgndy;
+         //gui->pset(drawx, drawy,c);
+         vram[drawx + (drawy * SCREEN_WIDTH)] = fixed;
+      }
+   }  
+
    return UG_RESULT_OK;
 }
 
 void init_ugui(){
    UG_Init(&screen_context, gba_plot_pixel, SCREEN_WIDTH, SCREEN_HEIGHT);
    
-   //UG_DriverRegister(DRIVER_DRAW_LINE, void* driver );
+   UG_DriverRegister(DRIVER_DRAW_LINE, (void*)gba_draw_line);
    UG_DriverRegister(DRIVER_FILL_FRAME, (void*)gba_fill_square);
    //UG_DriverRegister(DRIVER_FILL_AREA, void* driver );
    
-   //UG_DriverEnable(DRIVER_DRAW_LINE);
+   UG_DriverEnable(DRIVER_DRAW_LINE);
    UG_DriverEnable(DRIVER_FILL_FRAME);
    //UG_DriverEnable(DRIVER_FILL_AREA);
    
