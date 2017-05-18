@@ -4,6 +4,7 @@
 #include <gba_systemcalls.h>//for VBlankIntrWait()
 
 #include "itemmenu.h"
+#include "rendering.h"
 #include "uguishim.h"
 #include "ugui/ugui.h"
 
@@ -32,7 +33,7 @@ static void message_cb(UG_MESSAGE* msg_ptr){
    //do nothing
 }
 
-item* list_items(item* items){   
+item* list_items(item* items, bool exit_allowed){
    UG_WINDOW   window;
    UG_OBJECT   objects[MAX_ITEMS];
    UG_TEXTBOX  text_entrys[MAX_LIST_SIZE];
@@ -55,7 +56,6 @@ item* list_items(item* items){
       UG_TextboxSetFont(&window, cnt /*id*/, &FONT_8X12);
       UG_TextboxSetAlignment(&window, cnt /*id*/, ALIGN_CENTER_LEFT);
       UG_TextboxSetText(&window, cnt /*id*/, items[cnt].name);
-      //UG_TextboxSetForeColor(&window, cnt /*id*/, ITEM_TEXT_COLOR);
       UG_TextboxShow(&window, cnt /*id*/);
       current_y += ITEM_HEIGHT;
    }
@@ -63,9 +63,6 @@ item* list_items(item* items){
    UG_TextboxSetBackColor(&window, active_item /*id*/, ITEM_CURSOR_COLOR);
    
    UG_WindowShow(&window);
-   
-   //only render this once
-   Fake_Window(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT);
 
    //frame loop
    uint16_t window_background_color = UG_WindowGetBackColor(&window);
@@ -80,6 +77,10 @@ item* list_items(item* items){
       
       if(keys & KEY_A){
          break;//an item was selected
+      }
+      
+      if(exit_allowed && (keys & KEY_B)){
+         return (item*)NULL;//exit wanted, no item was selected
       }
       
       //top of the list is 0, so going up means subtracting not adding
@@ -102,6 +103,10 @@ item* list_items(item* items){
          UG_Update();
          
          //draw the item
+         Fake_Window(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT);
+         if(items[active_item].item_image.bitmap != NULL){
+            draw_texture(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, items[active_item].item_image);
+         }
          
          needs_render = false;
       }

@@ -2,4 +2,4 @@
 
 #include "material.h"
 
-item* list_items(item* items);
+item* list_items(item* items, bool exit_allowed);

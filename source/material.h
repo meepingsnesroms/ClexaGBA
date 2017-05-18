@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
-//all item bitmaps should be 20x20
+#include "gametypes.h"
+
+//all item bitmaps should be 50x50
 
 enum{
    MATTER_SOLID,
@@ -31,8 +33,6 @@ typedef struct{
    uint16_t type;
    uint16_t count;
    material propertys;
-   //uint16_t w;
-   //uint16_t h;
-   uint16_t* bitmap;
+   texture item_image;
    char name[20];
 }item;

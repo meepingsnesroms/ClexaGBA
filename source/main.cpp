@@ -10,6 +10,7 @@
 #include "gameengine.h"
 #include "uguishim.h"
 #include "mainmenu.h"
+#include "rendering.h"
 
 //---------------------------------------------------------------------------------
 // Program entry point
@@ -32,6 +33,9 @@ int main(void) {
    
    // setup menu structs
    init_menu();
+   
+   // setup render layers
+   init_renderer();
    
    // setup game structs
    init_game();

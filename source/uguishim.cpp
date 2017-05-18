@@ -30,6 +30,7 @@ UG_COLOR Frame_Colors[] =
    0x9D13,
 };
 
+/*
 static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
    uint16_t fixed = 0;//gba has red and blue swapped
    fixed |= color >> 11;//red
@@ -37,30 +38,41 @@ static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
    fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
    vram[x + (y * SCREEN_WIDTH)] = fixed;
 }
+*/
 
-static void gba_fill_square(int16_t x, int16_t y, int16_t x2, int16_t y2, uint16_t color){
+static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
+   //gba has red and blue swapped, so it is actually bgr16
+   uint16_t fixed = color >> 11;//red
+   fixed |= color << 10;//blue
+   fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
+   vram[x + (y * SCREEN_WIDTH)] = fixed;
+}
+
+static UG_RESULT gba_fill_square(int16_t x, int16_t y, int16_t x2, int16_t y2, uint16_t color){
    uint16_t fixed = 0;//gba has red and blue swapped
    fixed |= color >> 11;//red
    fixed |= color << 10;//blue
    fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
 
-   for(int16_t cnt_y = y; cnt_y < y2; cnt_y++){
-      for(int16_t cnt_x = x; cnt_x < x2; cnt_x++){
+   for(int16_t cnt_y = y; cnt_y <= y2; cnt_y++){
+      for(int16_t cnt_x = x; cnt_x <= x2; cnt_x++){
          vram[cnt_x + (cnt_y * SCREEN_WIDTH)] = fixed;
       }
    }
+   
+   return UG_RESULT_OK;
 }
 
 void init_ugui(){
    UG_Init(&screen_context, gba_plot_pixel, SCREEN_WIDTH, SCREEN_HEIGHT);
    
-   //UG_DriverRegister( UG_U8 type, void* driver );
+   //UG_DriverRegister(DRIVER_DRAW_LINE, void* driver );
    UG_DriverRegister(DRIVER_FILL_FRAME, (void*)gba_fill_square);
-   //UG_DriverRegister( UG_U8 type, void* driver );
+   //UG_DriverRegister(DRIVER_FILL_AREA, void* driver );
    
-   //UG_DriverEnable( UG_U8 type );
+   //UG_DriverEnable(DRIVER_DRAW_LINE);
    UG_DriverEnable(DRIVER_FILL_FRAME);
-   //UG_DriverEnable( UG_U8 type );
+   //UG_DriverEnable(DRIVER_FILL_AREA);
    
    UG_FontSelect(&FONT_6X8);
 }
