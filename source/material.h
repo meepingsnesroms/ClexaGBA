@@ -32,6 +32,7 @@ typedef struct{
 typedef struct{
    uint16_t type;
    uint16_t count;
+   bool active;
    material propertys;
    texture item_image;
    char name[20];

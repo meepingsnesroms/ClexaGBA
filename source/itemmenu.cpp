@@ -12,12 +12,12 @@
 
 //using 8x12 font for item names
 
-#define ITEM_WINDOW_WIDTH  ((SCREEN_WIDTH / 2) - 20)
+#define ITEM_WINDOW_WIDTH  ((SCREEN_WIDTH / 2) + 20)//((SCREEN_WIDTH / 2) - 20)
 #define ITEM_WINDOW_HEIGHT SCREEN_HEIGHT
 
 #define ITEM_LIST_OFFSET_X 20
 #define ITEM_LIST_OFFSET_Y 20
-#define ITEM_WIDTH  60
+#define ITEM_WIDTH  80//was 60
 #define ITEM_HEIGHT 16 //2 pixel margins on top and bottom
 
 #define ITEM_CURSOR_COLOR C_PALE_GOLDEN_ROD
@@ -33,7 +33,7 @@ static void message_cb(UG_MESSAGE* msg_ptr){
    //do nothing
 }
 
-item* list_items(item* items, bool exit_allowed){
+item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    UG_WINDOW   window;
    UG_OBJECT   objects[MAX_ITEMS];
    UG_TEXTBOX  text_entrys[MAX_LIST_SIZE];
@@ -86,10 +86,16 @@ item* list_items(item* items, bool exit_allowed){
       //top of the list is 0, so going up means subtracting not adding
       if(keys & KEY_UP){
          if(active_item > 0)active_item--;
+         else{
+            //need to fetch next item from list and push list down
+         }
       }
       
       if(keys & KEY_DOWN){
-         if(active_item < MAX_LIST_SIZE)active_item++;
+         if(active_item < MAX_LIST_SIZE && active_item < total_items)active_item++;
+         else{
+            //need to fetch next item from list and push list up
+         }
       }
       
       //update gui
@@ -105,7 +111,7 @@ item* list_items(item* items, bool exit_allowed){
          //draw the item
          Fake_Window(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT);
          if(items[active_item].item_image.bitmap != NULL){
-            draw_texture(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, items[active_item].item_image);
+            draw_texture(IMAGE_BOX_OFFSET_X + 2, IMAGE_BOX_OFFSET_Y + 3, items[active_item].item_image);
          }
          
          needs_render = false;

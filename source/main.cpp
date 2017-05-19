@@ -11,6 +11,7 @@
 #include "uguishim.h"
 #include "mainmenu.h"
 #include "rendering.h"
+#include "inventory.h"
 
 //---------------------------------------------------------------------------------
 // Program entry point
@@ -38,6 +39,7 @@ int main(void) {
    init_renderer();
    
    // setup game structs
+   init_inventory();
    init_game();
 
    while (1) {
