@@ -12,17 +12,21 @@
 
 //using 8x12 font for item names
 
-#define ITEM_WINDOW_WIDTH  ((SCREEN_WIDTH / 2) + 20)//((SCREEN_WIDTH / 2) - 20)
+#define ITEM_WINDOW_WIDTH  ((SCREEN_WIDTH / 2) - 20)//((SCREEN_WIDTH / 2) + 20)
 #define ITEM_WINDOW_HEIGHT SCREEN_HEIGHT
 
-#define ITEM_LIST_OFFSET_X 20
-#define ITEM_LIST_OFFSET_Y 20
-#define ITEM_WIDTH  80//was 60
+#define ITEM_LIST_OFFSET_X 0
+#define ITEM_LIST_OFFSET_Y 0
+
+//#define ITEM_WIDTH  80//was 60
+
+#define ITEM_WIDTH  (UG_WindowGetInnerWidth(&window))
 #define ITEM_HEIGHT 16 //2 pixel margins on top and bottom
 
 #define ITEM_CURSOR_COLOR C_PALE_GOLDEN_ROD
 #define ITEM_TEXT_COLOR   C_WHITE
 #define MAX_LIST_SIZE (SCREEN_HEIGHT / ITEM_HEIGHT) //list items shown at once
+//#define MAX_LIST_SIZE (UG_WindowGetInnerHeight(&window) / ITEM_HEIGHT) //UG_WindowGetInnerHeight() causes corruption?
 
 #define IMAGE_BOX_OFFSET_X 160
 #define IMAGE_BOX_OFFSET_Y 75
@@ -52,12 +56,12 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    uint16_t current_x = ITEM_LIST_OFFSET_X;
    uint16_t current_y = ITEM_LIST_OFFSET_Y;
    for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
-      UG_TextboxCreate(&window, &text_entrys[cnt] /*(UG_TEXTBOX*)*/, cnt /*id*/, current_x, current_y, current_x + ITEM_WIDTH, current_y + ITEM_HEIGHT);
+      UG_TextboxCreate(&window, &text_entrys[cnt] /*(UG_TEXTBOX*)*/, cnt /*id*/, current_x, current_y, current_x + ITEM_WIDTH - 1, current_y + ITEM_HEIGHT - 1);
       UG_TextboxSetFont(&window, cnt /*id*/, &FONT_8X12);
-      UG_TextboxSetAlignment(&window, cnt /*id*/, ALIGN_CENTER_LEFT);
+      UG_TextboxSetAlignment(&window, cnt /*id*/, ALIGN_CENTER);
       UG_TextboxSetText(&window, cnt /*id*/, items[cnt].name);
       UG_TextboxShow(&window, cnt /*id*/);
-      current_y += ITEM_HEIGHT;
+      current_y += ITEM_HEIGHT - 1;
    }
    
    UG_TextboxSetBackColor(&window, active_item /*id*/, ITEM_CURSOR_COLOR);
@@ -92,7 +96,7 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
       }
       
       if(keys & KEY_DOWN){
-         if(active_item < MAX_LIST_SIZE && active_item < total_items)active_item++;
+         if(active_item < MAX_LIST_SIZE - 1 && active_item < total_items - 1)active_item++;
          else{
             //need to fetch next item from list and push list up
          }
