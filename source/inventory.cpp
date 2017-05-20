@@ -72,7 +72,7 @@ void init_inventory(){
 }
 
 item* open_inventory(){
-#if 0//test items
+#if 1//test items
    item* test_items = currently_held_items;
    total_items = 20;
    char data_str[20];

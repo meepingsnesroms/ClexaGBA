@@ -8,9 +8,9 @@
 #include "uguishim.h"
 #include "ugui/ugui.h"
 
-#define MAX_ITEMS 50
-
 //using 8x12 font for item names
+
+#define USE_SCROLLING_LIST
 
 #define ITEM_WINDOW_WIDTH  ((SCREEN_WIDTH / 2) - 20)//((SCREEN_WIDTH / 2) + 20)
 #define ITEM_WINDOW_HEIGHT SCREEN_HEIGHT
@@ -23,8 +23,14 @@
 
 #define ITEM_CURSOR_COLOR C_PALE_GOLDEN_ROD
 #define ITEM_TEXT_COLOR   C_WHITE
-#define MAX_LIST_SIZE (SCREEN_HEIGHT / ITEM_HEIGHT) //list items shown at once
-//#define MAX_LIST_SIZE (UG_WindowGetInnerHeight(&window) / ITEM_HEIGHT) //UG_WindowGetInnerHeight() causes corruption?
+
+/* 
+ list items shown at once, must be a constant,
+ using a function like UG_WindowGetInnerHeight(&window)
+ will try to determine the object array sizes using a window varible
+ before the window is initialised giving improper size.(likely 0)
+*/
+#define MAX_LIST_SIZE (SCREEN_HEIGHT / ITEM_HEIGHT) 
 
 #define IMAGE_BOX_OFFSET_X 160
 #define IMAGE_BOX_OFFSET_Y 75
@@ -37,11 +43,11 @@ static void message_cb(UG_MESSAGE* msg_ptr){
 
 item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    UG_WINDOW   window;
-   UG_OBJECT   objects[MAX_ITEMS];
+   UG_OBJECT   objects[MAX_LIST_SIZE];
    UG_TEXTBOX  text_entrys[MAX_LIST_SIZE];
    uint8_t     active_item = 0;
    
-   UG_WindowCreate(&window, objects, MAX_ITEMS, message_cb);
+   UG_WindowCreate(&window, objects, MAX_LIST_SIZE, message_cb);
    
    UG_WindowSetXStart(&window, 0);
    UG_WindowSetYStart(&window, 0);
@@ -69,9 +75,11 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    uint16_t window_background_color = UG_WindowGetBackColor(&window);
    uint8_t old_active_item;
    uint16_t shifted_by = 0;
+   uint16_t old_shifted_by;
    bool needs_render = true;
    while(1){
       old_active_item = active_item;
+      old_shifted_by  = shifted_by;
       
       //test buttons
       scanKeys();
@@ -89,41 +97,49 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
       if(keys & KEY_UP){
          if(active_item > 0)active_item--;
          else{
-            //need to fetch next item from list and push list down
+#ifdef USE_SCROLLING_LIST
+            if(shifted_by > 0){
+               shifted_by--;
+               //need to fetch next item from list and push list down
+               for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
+                  UG_TextboxSetText(&window, cnt /*id*/, items[cnt + shifted_by].name);
+               }
+            }
+#endif
          }
       }
       
       if(keys & KEY_DOWN){
          if(active_item < MAX_LIST_SIZE - 1 && active_item < total_items - 1)active_item++;
          else{
-#if 0
+#ifdef USE_SCROLLING_LIST
+            //check if scrolling is ok
             if(active_item + shifted_by < total_items - 1){
-               
+               shifted_by++;
+               //need to fetch next item from list and push list up
+               for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
+                  UG_TextboxSetText(&window, cnt /*id*/, items[cnt + shifted_by].name);
+               }
             }
-            //need to fetch next item from list and push list up
-            for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE - 1; cnt++){
-               UG_TextboxSetText(&window, cnt /*id*/, items[cnt + 1].name);
-            }
-            UG_TextboxSetText(&window, MAX_LIST_SIZE - 1 /*id*/, items[active_item + shifted_by + 1].name);
-            shifted_by++;
 #endif
          }
       }
-      
+
       //update gui
-      if(old_active_item != active_item){
-         UG_TextboxSetBackColor(&window, old_active_item /*id*/, window_background_color);
-         UG_TextboxSetBackColor(&window, active_item /*id*/, ITEM_CURSOR_COLOR);
+      if(old_active_item != active_item || shifted_by != old_shifted_by){
          needs_render = true;
       }
       
       if(needs_render){
+         UG_TextboxSetBackColor(&window, old_active_item /*id*/, window_background_color);
+         UG_TextboxSetBackColor(&window, active_item /*id*/, ITEM_CURSOR_COLOR);
+         
          UG_Update();
          
          //draw the item
          Fake_Window(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT);
-         if(items[active_item].item_image.bitmap != NULL){
-            draw_texture(IMAGE_BOX_OFFSET_X + 2, IMAGE_BOX_OFFSET_Y + 3, items[active_item].item_image);
+         if(items[active_item + shifted_by].item_image.bitmap != NULL){
+            draw_texture(IMAGE_BOX_OFFSET_X + 2, IMAGE_BOX_OFFSET_Y + 3, items[active_item + shifted_by].item_image);
          }
          
          needs_render = false;
