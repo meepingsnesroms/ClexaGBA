@@ -18,8 +18,6 @@
 #define ITEM_LIST_OFFSET_X 0
 #define ITEM_LIST_OFFSET_Y 0
 
-//#define ITEM_WIDTH  80//was 60
-
 #define ITEM_WIDTH  (UG_WindowGetInnerWidth(&window))
 #define ITEM_HEIGHT 16 //2 pixel margins on top and bottom
 
@@ -53,10 +51,9 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    
    UG_WindowSetForeColor(&window, C_WHITE);
    
-   uint16_t current_x = ITEM_LIST_OFFSET_X;
    uint16_t current_y = ITEM_LIST_OFFSET_Y;
    for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
-      UG_TextboxCreate(&window, &text_entrys[cnt] /*(UG_TEXTBOX*)*/, cnt /*id*/, current_x, current_y, current_x + ITEM_WIDTH - 1, current_y + ITEM_HEIGHT - 1);
+      UG_TextboxCreate(&window, &text_entrys[cnt] /*(UG_TEXTBOX*)*/, cnt /*id*/, ITEM_LIST_OFFSET_X, current_y, ITEM_LIST_OFFSET_X + ITEM_WIDTH - 1, current_y + ITEM_HEIGHT - 1);
       UG_TextboxSetFont(&window, cnt /*id*/, &FONT_8X12);
       UG_TextboxSetAlignment(&window, cnt /*id*/, ALIGN_CENTER);
       UG_TextboxSetText(&window, cnt /*id*/, items[cnt].name);
@@ -71,6 +68,7 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    //frame loop
    uint16_t window_background_color = UG_WindowGetBackColor(&window);
    uint8_t old_active_item;
+   uint16_t shifted_by = 0;
    bool needs_render = true;
    while(1){
       old_active_item = active_item;
@@ -98,7 +96,17 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
       if(keys & KEY_DOWN){
          if(active_item < MAX_LIST_SIZE - 1 && active_item < total_items - 1)active_item++;
          else{
+#if 0
+            if(active_item + shifted_by < total_items - 1){
+               
+            }
             //need to fetch next item from list and push list up
+            for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE - 1; cnt++){
+               UG_TextboxSetText(&window, cnt /*id*/, items[cnt + 1].name);
+            }
+            UG_TextboxSetText(&window, MAX_LIST_SIZE - 1 /*id*/, items[active_item + shifted_by + 1].name);
+            shifted_by++;
+#endif
          }
       }
       
