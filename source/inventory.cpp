@@ -6,10 +6,24 @@
 
 #define MAX_HELD_ITEMS 20
 
-item currently_held_items[MAX_HELD_ITEMS];
+item     currently_held_items[MAX_HELD_ITEMS];
+item     formatted_item_list[MAX_HELD_ITEMS];
 uint16_t total_items;
 
-void sort_by_letter(){
+static char make_lowercase(char chr){
+   //leave lowercase alone
+   //leave numbers alone
+   if(chr >= 'A' && chr <= 'Z'){
+      chr += 0x20;
+   }
+   return chr;
+}
+
+static void sort_by_letter(){
+   
+}
+
+static void make_menu_readable_item_list(){
    
 }
 
