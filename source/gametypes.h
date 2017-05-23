@@ -23,6 +23,7 @@ typedef struct{
    uint16_t angle;//degrees 0<->359
    int16_t gravity;//negitive gravity sends you upward
    bool active;//if this is entity is currently in use
+   bool kill_on_exit;//if this is set remove the entity from the list on level exit
    bool bullet;
    bool is_hit;
    bool is_solid;
@@ -42,13 +43,15 @@ typedef struct{
 }animation;
 
 typedef struct{
-   uint16_t north;
-   uint16_t south;
-   uint16_t east;
-   uint16_t west;
+   uint16_t level_id;//this levels level id
    
-   uint16_t* background;
-   uint16_t* foreground; //if a pixel is not transparent here it is solid in the collision map
+   uint16_t north;//level number above this level
+   uint16_t south;//level number below this level
+   uint16_t east;//level number to the right of this level
+   uint16_t west;//level number to the left of this level
+   
+   uint16_t* background;//background bitmap
+   uint16_t* foreground;//if a pixel is not transparent here it is solid in the collision map
 }level;
 
 

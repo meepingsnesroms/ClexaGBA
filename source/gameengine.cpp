@@ -83,6 +83,7 @@ void reset_entity(entity& ent){
    ent.angle = 0;
    ent.gravity = 0;
    ent.active = false;
+   ent.kill_on_exit = true;
    ent.bullet = false;
    ent.is_hit = false;
    ent.is_solid = false;
@@ -139,11 +140,23 @@ void change_level(level* new_level){
    //terrain
    conv_16bpp_to_terrain(enviroment_map, new_level->foreground, SCREEN_WIDTH * SCREEN_HEIGHT);
    
+   
    //todo
    //move player
-   //clear enemys
+   
+   
+   //clear entitys
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      if(characters[cnt].kill_on_exit){
+         characters[cnt].active = false;
+      }
+   }
    
    current_level = new_level;
+}
+
+bool crossed_border(entity& ent){
+   
 }
 
 void render_entitys(){
@@ -412,6 +425,7 @@ void init_game(){
    PLAYER.w = 15 - 4;
    PLAYER.h = 16 - 4;
    PLAYER.active = true;
+   PLAYER.kill_on_exit = false;
    PLAYER.index = 0;
    PLAYER.sprite_x_offset = -2;
    PLAYER.sprite_y_offset = -2;
@@ -425,6 +439,7 @@ void init_game(){
    thing1.w = 16;
    thing1.h = 16;
    thing1.active = true;
+   thing1.kill_on_exit = false;//temp, just for testing
    thing1.is_solid = true;//just a test
    thing1.index  = 1;
    thing1.sprite = {16, 16, crosshair};
