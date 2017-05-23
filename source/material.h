@@ -4,8 +4,6 @@
 
 #include "gametypes.h"
 
-//all item bitmaps should be 50x50
-
 enum{
    MATTER_SOLID,
    MATTER_LIQUID,

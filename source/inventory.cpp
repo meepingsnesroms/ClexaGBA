@@ -71,9 +71,9 @@ void default_inventory(){
    the_flame.propertys.radioactive  = true;
    the_flame.propertys.electric_charge = 0;
    
-   the_flame.item_image.w = 16;
-   the_flame.item_image.h = 16;
-   the_flame.item_image.bitmap = clarke_front_data;
+   the_flame.item_image.w = 43;
+   the_flame.item_image.h = 60;
+   the_flame.item_image.bitmap = flame_data;
    strcpy(the_flame.name, "The Flame");
    
    add_item(the_flame);
@@ -83,18 +83,19 @@ void default_inventory(){
 void init_inventory(){
    total_items = 0;
    default_inventory();
-}
-
-item* open_inventory(){
+   
 #if 1//test items
    item* test_items = currently_held_items;
-   total_items = 20;
+   total_items = MAX_HELD_ITEMS;
    char data_str[20];
-   for(uint8_t cnt = 0; cnt < 20; cnt++){
+   for(uint8_t cnt = 1; cnt < MAX_HELD_ITEMS; cnt++){
       strcpy(test_items[cnt].name, "FkItem");
       strcat(test_items[cnt].name, itoa(cnt, data_str, 10));
       test_items[cnt].item_image.bitmap = NULL;
    }
 #endif
+}
+
+item* open_inventory(){
    return list_items(currently_held_items, total_items, true /*exit_allowed*/);
 }

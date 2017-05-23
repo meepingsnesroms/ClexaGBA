@@ -1,6 +1,5 @@
 #include <gba_video.h>
 #include <gba_input.h>
-#include <gba_interrupt.h>//for VBlankIntrWait()
 #include <gba_systemcalls.h>//for VBlankIntrWait()
 
 #include "itemmenu.h"
@@ -30,12 +29,12 @@
  will try to determine the object array sizes using a window varible
  before the window is initialised giving improper size.(likely 0)
 */
-#define MAX_LIST_SIZE (SCREEN_HEIGHT / ITEM_HEIGHT) 
+#define MAX_LIST_SIZE (SCREEN_HEIGHT / ITEM_HEIGHT)
 
 #define IMAGE_BOX_OFFSET_X 160
 #define IMAGE_BOX_OFFSET_Y 75
-#define IMAGE_BOX_WIDTH  50
-#define IMAGE_BOX_HEIGHT 50
+#define IMAGE_BOX_WIDTH  60
+#define IMAGE_BOX_HEIGHT 60
 
 static void message_cb(UG_MESSAGE* msg_ptr){
    //do nothing
@@ -51,8 +50,8 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    
    UG_WindowSetXStart(&window, 0);
    UG_WindowSetYStart(&window, 0);
-   UG_WindowSetXEnd(&window, ITEM_WINDOW_WIDTH);
-   UG_WindowSetYEnd(&window, ITEM_WINDOW_HEIGHT);
+   UG_WindowSetXEnd(&window, ITEM_WINDOW_WIDTH  - 1);
+   UG_WindowSetYEnd(&window, ITEM_WINDOW_HEIGHT - 1);
    UG_WindowSetStyle(&window, WND_STYLE_HIDE_TITLE | WND_STYLE_3D);
    
    UG_WindowSetForeColor(&window, C_WHITE);
@@ -139,7 +138,7 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
          //draw the item
          Fake_Window(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, IMAGE_BOX_OFFSET_X + IMAGE_BOX_WIDTH, IMAGE_BOX_OFFSET_Y + IMAGE_BOX_HEIGHT);
          if(items[active_item + shifted_by].item_image.bitmap != NULL){
-            draw_texture(IMAGE_BOX_OFFSET_X + 2, IMAGE_BOX_OFFSET_Y + 3, items[active_item + shifted_by].item_image);
+            draw_texture(IMAGE_BOX_OFFSET_X, IMAGE_BOX_OFFSET_Y, items[active_item + shifted_by].item_image);
          }
          
          needs_render = false;
@@ -152,5 +151,5 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    //destroy the window to prevent use after free on return from function
    UG_WindowDelete(&window);
    
-   return &items[active_item];//return selected item
+   return &items[active_item + shifted_by];//return selected item
 }

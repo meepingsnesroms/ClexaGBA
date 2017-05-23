@@ -10,5 +10,6 @@ extern uint16_t clarke_back_data[];
 extern uint16_t clarke_left_data[];
 extern uint16_t clarke_right_data[];
 
-extern uint16_t flame_bitmap[];
+extern uint16_t flame_data[];
+
 extern texture  rock_tex;

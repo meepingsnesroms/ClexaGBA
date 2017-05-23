@@ -1,7 +1,6 @@
 #include <gba_video.h>
 #include <gba_input.h>
 #include <gba_systemcalls.h>
-//#include <maxmod.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +22,6 @@
 //use framebuffer for now
 //static uint16_t *const vram = ((uint16_t*)0x06000000);
 static uint16_t keys;
-//static mm_gba_system gba_music;
 
 #define ENTITYS 20
 #define PLAYER characters[0]
@@ -347,10 +345,7 @@ void init_game(){
    //prevents leaving the screen
    border_wall();
    
-   //gba_music.mixing_mode = MM_MIX_31KHZ;
-   
    //init music
-   //mmInit(&gba_music);
    
    //polis tower
    draw_logo();
@@ -394,8 +389,8 @@ void init_game(){
    
    entity& thing1 = get_avail_entity();
    reset_entity(thing1);
-   //thing1.x = 50;
-   //thing1.y = 50;
+   thing1.x = 50;
+   thing1.y = 50;
    thing1.x = 0;
    thing1.y = 0;
    thing1.w = 16;
@@ -413,8 +408,6 @@ void switch_to_game(){
 
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
-   
-   //mmFrame();
 
    test_collisions();
    update_entitys();

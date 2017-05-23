@@ -5,6 +5,7 @@
 #include "runloop.h"
 #include "gameengine.h"
 #include "itemmenu.h"
+#include "diag.h"
 
 #define MAX_OBJECTS 50
 #define NUM_BUTTONS 2
@@ -23,8 +24,8 @@ void init_menu(){
    
    UG_WindowSetXStart(&render_window, 0);
    UG_WindowSetYStart(&render_window, 0);
-   UG_WindowSetXEnd(&render_window, SCREEN_WIDTH);
-   UG_WindowSetYEnd(&render_window, SCREEN_HEIGHT);
+   UG_WindowSetXEnd(&render_window, SCREEN_WIDTH - 1);
+   UG_WindowSetYEnd(&render_window, SCREEN_HEIGHT - 1);
    UG_WindowSetTitleColor(&render_window, C_BLUE);
    UG_WindowSetTitleTextColor(&render_window, C_WHITE);
    UG_WindowSetTitleTextAlignment(&render_window, ALIGN_CENTER);
@@ -91,6 +92,13 @@ void draw_menu(){
             //do nothing
             break;
       }
+   }
+   
+   //run tests
+   if(keys & KEY_R){
+      run_tests();
+      UG_WindowShow(&render_window);
+      update_window = true;
    }
 
    if(update_window){

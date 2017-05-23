@@ -8,9 +8,7 @@
 #include "../data/clarke_back.c.out"
 #include "../data/clarke_left.c.out"
 #include "../data/clarke_right.c.out"
-
-
-uint16_t flame_bitmap[] = {0x00, 0x00};
+#include "../data/flame.c.out"
 
 //item the_flame = {0, 1, {MATTER_SOLID, false, false, true, false, true, 0, (reaction*)NULL}, flame_bitmap, "The Flame"};
 
