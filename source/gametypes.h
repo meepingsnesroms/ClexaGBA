@@ -47,9 +47,9 @@ typedef struct{
    uint16_t east;
    uint16_t west;
    
-   uint16_t* bitmap;
-   uint8_t*  collison_map;
-}level_map;
+   uint16_t* background;
+   uint16_t* foreground; //if a pixel is not transparent here it is solid in the collision map
+}level;
 
 
 

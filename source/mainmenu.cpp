@@ -95,6 +95,11 @@ void draw_menu(){
    }
    
    //run tests
+   if(keys & KEY_L){
+      gba_printf("There are %d bunnys.", 32);
+      UG_WindowShow(&render_window);
+      update_window = true;
+   }
    if(keys & KEY_R){
       run_tests();
       UG_WindowShow(&render_window);

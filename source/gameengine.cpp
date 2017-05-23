@@ -10,12 +10,11 @@
 #include "../data/clexalogo.cdata"
 #include "../data/crosshair.cdata"
 #include "../data/polis.cdata"
-
 #include "../data/leveltest.cdata"
 
 #include "uguishim.h"
 #include "inventory.h"
-
+#include "speedhacks.h"
 #include "gametypes.h"
 #include "rendering.h"
 
@@ -34,6 +33,8 @@ uint16_t  crosshair2[16 * 16];
 entity   characters[ENTITYS];
 uint8_t* enviroment_map;//map of terrain type
 uint8_t  num_active_characters;
+
+level* current_level;
 
 bool have_nightblood;
 
@@ -114,6 +115,35 @@ void conv_32bpp_to_terrain(uint8_t* output, uint32_t* data, uint32_t size){
       //output[cnt] = data[cnt] & 0xFF;
       output[cnt] = data[cnt] & 0x01;
    }
+}
+
+void conv_16bpp_to_terrain(uint8_t* output, uint16_t* data, uint32_t size){
+   for(uint32_t cnt = 0; cnt < size; cnt++){
+      if(data[cnt] & 0x8000){
+         output[cnt] = 0x01;
+      }
+      else {
+         output[cnt] = 0x00;
+      }
+   }
+}
+
+void change_level(level* new_level){
+   //background
+   memcpy32(background, new_level->background, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
+   
+   //foreground
+   texture foreground_wrapper = {SCREEN_WIDTH, SCREEN_HEIGHT, new_level->foreground};
+   draw_texture(0, 0, foreground_wrapper);
+   
+   //terrain
+   conv_16bpp_to_terrain(enviroment_map, new_level->foreground, SCREEN_WIDTH * SCREEN_HEIGHT);
+   
+   //todo
+   //move player
+   //clear enemys
+   
+   current_level = new_level;
 }
 
 void render_entitys(){
@@ -217,6 +247,7 @@ void move_player(void* me){
       open_inventory();
       redraw_screen();//the item list corrupts the vram so a full redraw is needed
    }
+   
    
    //debug only!
    if(keys & KEY_R){
