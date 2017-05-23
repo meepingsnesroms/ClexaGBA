@@ -391,8 +391,6 @@ void init_game(){
    reset_entity(thing1);
    thing1.x = 50;
    thing1.y = 50;
-   thing1.x = 0;
-   thing1.y = 0;
    thing1.w = 16;
    thing1.h = 16;
    thing1.active = true;
