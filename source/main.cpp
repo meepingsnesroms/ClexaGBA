@@ -12,6 +12,7 @@
 #include "mainmenu.h"
 #include "rendering.h"
 #include "inventory.h"
+#include "audio.h"
 
 //---------------------------------------------------------------------------------
 // Program entry point
@@ -29,16 +30,10 @@ int main(void) {
    // set framebuffer mode
    SetMode(MODE_3 | BG2_ON /* 240*160 16bit color */);
    
-   // setup ugui
    init_ugui();
-   
-   // setup menu structs
    init_menu();
-   
-   // setup render layers
    init_renderer();
-   
-   // setup game structs
+   init_audio();
    init_inventory();
    init_game();
 

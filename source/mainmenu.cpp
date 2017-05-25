@@ -6,6 +6,7 @@
 #include "gameengine.h"
 #include "itemmenu.h"
 #include "diag.h"
+#include "audio.h"
 
 #define MAX_OBJECTS 50
 #define NUM_BUTTONS 2
@@ -96,6 +97,7 @@ void draw_menu(){
    
    //run tests
    if(keys & KEY_L){
+      play_test();//audio test
       gba_printf("There are %d bunnys.", 32);
       UG_WindowShow(&render_window);
       update_window = true;
