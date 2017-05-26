@@ -39,7 +39,7 @@ std::vector<uint16_t> export_16khz_pcm(std::string filename){
 	desiredFormat.setChannelCount(2);//default 2
 	desiredFormat.setCodec("audio/x-raw");
 	desiredFormat.setSampleType(QAudioFormat::UnSignedInt);
-	desiredFormat.setSampleRate(48000);//default 48000
+	desiredFormat.setSampleRate(21024);//default 48000, using obscure gba rate
 	desiredFormat.setSampleSize(16);
 
 	QAudioDecoder decoder;
