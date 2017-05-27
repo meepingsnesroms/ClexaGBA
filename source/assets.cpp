@@ -4,6 +4,8 @@
 #include "gametypes.h"
 #include "material.h"
 
+#include "assets.h"
+
 #include "../data/clarke_front.c.out"
 #include "../data/clarke_back.c.out"
 #include "../data/clarke_left.c.out"

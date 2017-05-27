@@ -5,6 +5,8 @@
 #include "gametypes.h"
 #include "material.h"
 
+#define ROM_DATA __attribute__((section(".text")))
+
 extern uint16_t clarke_front_data[];
 extern uint16_t clarke_back_data[];
 extern uint16_t clarke_left_data[];
