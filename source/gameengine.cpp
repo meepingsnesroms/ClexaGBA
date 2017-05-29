@@ -129,7 +129,7 @@ void conv_16bpp_to_terrain(uint8_t* output, uint16_t* data, uint32_t size){
    }
 }
 
-void change_level(level* new_level){
+void change_level(level* new_level, uint8_t direction){
    //background
    memcpy32(background, new_level->background, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
    
@@ -140,10 +140,30 @@ void change_level(level* new_level){
    //terrain
    conv_16bpp_to_terrain(enviroment_map, new_level->foreground, SCREEN_WIDTH * SCREEN_HEIGHT);
    
-   
-   //todo
    //move player
-   
+   switch(direction){
+      case DIR_UP:
+         PLAYER.y = SCREEN_HEIGHT - 1 - PLAYER.h;//put player on bottom of new screen
+         break;
+      case DIR_DOWN:
+         PLAYER.y = 0;//put player on top of new screen
+         break;
+      case DIR_LEFT:
+         PLAYER.x = SCREEN_WIDTH - 1 - PLAYER.w;//put player on right side of new screen
+         break;
+      case DIR_RIGHT:
+         PLAYER.x = 0;//put player on left side of new screen
+         break;
+      case DIR_NONE:
+         //put player in center of screen when starting
+         PLAYER.x = (SCREEN_WIDTH / 2) - (PLAYER.w / 2);
+         PLAYER.y = (SCREEN_HEIGHT / 2) - (PLAYER.h / 2);
+         break;
+         
+      default:
+         bsod("invalid derection parameter");
+         break;
+   }
    
    //clear entitys
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
@@ -156,7 +176,13 @@ void change_level(level* new_level){
 }
 
 bool crossed_border(entity& ent){
-   
+   if(ent.x < 0 || ent.y < 0){
+      return true;
+   }
+   if(ent.x + ent.w > SCREEN_WIDTH - 1 || ent.y + ent.h > SCREEN_HEIGHT - 1){
+      return true;
+   }
+   return false;
 }
 
 void render_entitys(){
@@ -265,6 +291,7 @@ void move_player(void* me){
    //debug only!
    if(keys & KEY_R){
       have_nightblood = true;
+      update_health_bar();
    }
    
    
@@ -448,14 +475,16 @@ void init_game(){
 
 void switch_to_game(){
    draw_background();
+   update_health_bar();
 }
 
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
 
+   uint16_t old_health = PLAYER.health;
    test_collisions();
    update_entitys();
    clear_dirty_entitys();
    render_entitys();
-   update_health_bar();
+   if(PLAYER.health != old_health)update_health_bar();
 }

@@ -2,6 +2,14 @@
 
 #include <stdint.h>
 
+enum{
+   DIR_NONE,
+   DIR_UP,
+   DIR_DOWN,
+   DIR_LEFT,
+   DIR_RIGHT
+};
+
 typedef struct{
    uint16_t w;//width
    uint16_t h;//height
