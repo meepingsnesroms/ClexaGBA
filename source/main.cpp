@@ -37,6 +37,8 @@ int main(void) {
    init_inventory();
    init_game();
 
+   switch_to_menu();
+   
    while (1) {
       run_frame();
       VBlankIntrWait();

@@ -36,7 +36,6 @@ CFLAGS	:=	-g -Wall -O3\
 		-mcpu=arm7tdmi -mtune=arm7tdmi\
  		-fomit-frame-pointer\
 		-ffast-math \
-		-fpermissive \
 		$(ARCH)
 
 CFLAGS	+=	$(INCLUDE)

@@ -28,19 +28,17 @@
 #define TIMER_INTERRUPT TIMER_IRQ
 #define TIMER_ENABLE    TIMER_START
 #define TIMER_CASCADE   TIMER_COUNT
-//#define REG_TM0D        REG_TM0CNT_L
-//#define REG_TM1D        REG_TM1CNT_L
 #define DMA_WORD        DMA32
 #define DMA_MODE_FIFO   DMA_SPECIAL
 
-volatile int8_t*  pcm_data;
-volatile uint32_t pcm_offset;
-volatile uint32_t pcm_size;
+int8_t*  pcm_data;
+uint32_t pcm_offset;
+uint32_t pcm_size;
 volatile uint8_t  active_buffer;
 volatile uint32_t audio_buffer[2][88];//352 bytes, 21024hz
 
 volatile bool     loop_audio;
-volatile uint32_t dma_start_addr;
+//volatile uint32_t dma_start_addr;
 
 inline uint32_t swap32(uint32_t ui){
    ui = (ui >> 24) |
@@ -60,7 +58,7 @@ static void swap_buffer(){
    REG_DMA1CNT = 0;
    
    //switch buffer
-   REG_DMA1SAD = (uint32_t)&audio_buffer[active_buffer][0];
+   REG_DMA1SAD = (uint32_t) &audio_buffer[active_buffer][0];
    REG_DMA1CNT = DMA_DST_FIXED | DMA_REPEAT | DMA_WORD | DMA_MODE_FIFO | DMA_ENABLE;
    
    if(pcm_offset + 352 > pcm_size){
@@ -69,7 +67,8 @@ static void swap_buffer(){
       
       if(loop_audio){
          pcm_offset = 0;
-         memcpy32(audio_buffer[old_buffer], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
+         memcpy32((void*)&audio_buffer[old_buffer][0], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
+         //uint32_t* pcm_32 = (uint32_t*)(pcm_data + pcm_offset)
          for(uint16_t count = 0; count < 88; count++){
             audio_buffer[old_buffer][count] = swap32(audio_buffer[old_buffer][count]);
          }
@@ -87,7 +86,7 @@ static void swap_buffer(){
    }
    else{
       //copy a full buffer
-      memcpy32(audio_buffer[old_buffer], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
+      memcpy32((void*)&audio_buffer[old_buffer][0], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
       for(uint16_t count = 0; count < 88; count++){
          audio_buffer[old_buffer][count] = swap32(audio_buffer[old_buffer][count]);
       }
@@ -96,6 +95,7 @@ static void swap_buffer(){
 
 }
 
+/*
 static void block_overrun(){
    if(loop_audio){
       //kill the audio to prevent an overflow
@@ -117,6 +117,7 @@ static void block_overrun(){
    
    //REG_IF = IRQ_TIMER1;//clear interrupt
 }
+*/
 
 static void set_play_buffer(int8_t* data, uint32_t freq, uint32_t sample_length){
    pcm_data = data;
@@ -124,7 +125,7 @@ static void set_play_buffer(int8_t* data, uint32_t freq, uint32_t sample_length)
    pcm_size = (sample_length / 4) * 4;//cant do non multiple of 4
    
    active_buffer = 0;
-   memcpy32(audio_buffer[0], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
+   memcpy32((void*)&audio_buffer[0][0], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
    for(uint16_t count = 0; count < 88; count++){
       audio_buffer[0][count] = swap32(audio_buffer[0][count]);
    }
@@ -135,8 +136,9 @@ static void set_play_buffer(int8_t* data, uint32_t freq, uint32_t sample_length)
    //REG_SOUNDCNT_H = 0x0B0F;//unknown, need to decode meaning
    REG_SOUNDCNT_X = SOUND_ENABLE;
    
-   dma_start_addr = (uint32_t) data;//for looping audio
-   REG_DMA1SAD = (uint32_t) data;
+   //dma_start_addr = (uint32_t) data;//for looping audio
+   //REG_DMA1SAD = (uint32_t) data;
+   REG_DMA1SAD = (uint32_t) &audio_buffer[0][0];
    REG_DMA1DAD = (uint32_t) &(DSOUND_FIFOA);
    REG_DMA1CNT = DMA_REPEAT | DMA_WORD | DMA_MODE_FIFO | DMA_ENABLE | DMA_SRC_INC | DMA_DST_INC;
    

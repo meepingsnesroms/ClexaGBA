@@ -10,6 +10,7 @@
 #include "../data/clarke_back.c.out"
 #include "../data/clarke_left.c.out"
 #include "../data/clarke_right.c.out"
+#include "../data/titlescreen.c.out"
 #include "../data/flame.c.out"
 
 //item the_flame = {0, 1, {MATTER_SOLID, false, false, true, false, true, 0, (reaction*)NULL}, flame_bitmap, "The Flame"};

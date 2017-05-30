@@ -44,8 +44,37 @@ void invert_color(uint16_t* data, uint32_t size){
    }
 }
 
+uint16_t blend_color(uint16_t arg1, uint16_t arg2){
+   uint8_t r[3];
+   uint8_t g[3];
+   uint8_t b[3];
+   
+   //this function ignores transparency
+   arg1 &= 0x7FFF;
+   arg2 &= 0x7FFF;
+   
+   r[0] = arg1 & 0x001F;
+   g[0] = (arg1 >> 5) & 0x001F;
+   b[0] = (arg1 >> 10) & 0x001F;
+   
+   r[1] = arg2 & 0x001F;
+   g[1] = (arg2 >> 5) & 0x001F;
+   b[1] = (arg2 >> 10) & 0x001F;
+   
+   r[2] = (r[0] + r[1]) >> 1;
+   g[2] = (g[0] + g[1]) >> 1;
+   b[2] = (b[0] + b[1]) >> 1;
+   
+   return RGB5(b[2],g[2],r[2]);
+}
+
 void draw_background(){
    memcpy32(vram, background, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
+}
+
+void fill_background(uint16_t color){
+   uint32_t fill_val = ((color << 16) | color) & 0x7FFF7FFF;//remove transparent bit
+   memset32(background, fill_val, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
 }
 
 void restore_background(uint16_t x, uint16_t y, uint16_t w, uint16_t h){

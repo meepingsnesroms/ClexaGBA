@@ -18,8 +18,6 @@
 #include "gametypes.h"
 #include "rendering.h"
 
-//use framebuffer for now
-//static uint16_t *const vram = ((uint16_t*)0x06000000);
 static uint16_t keys;
 
 #define ENTITYS 20
@@ -413,13 +411,8 @@ void init_game(){
    
    conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);
    
-   //prevents leaving the screen
-   border_wall();
-   
    //init music
-   
-   //polis tower
-   draw_logo();
+   //not done yet
    
    conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
@@ -429,19 +422,6 @@ void init_game(){
    
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       reset_entity(characters[cnt]);
-   }
-   
-   //draw ground
-   for(uint16_t inc_y = 0; inc_y < SCREEN_HEIGHT; inc_y++){
-      for(uint16_t inc_x = 0; inc_x < SCREEN_WIDTH; inc_x++){
-         switch(get_environ_data(inc_x, inc_y)){
-            case 0x00:
-               break;
-            case 0x01:
-               background[inc_y * SCREEN_WIDTH + inc_x] = get_texture_pixel(inc_x, inc_y, rock_tex);
-               break;
-         }
-      }
    }
    
    //effects health bar rendering
@@ -474,6 +454,28 @@ void init_game(){
 }
 
 void switch_to_game(){
+   //fill to black
+   fill_background(0x0000);
+   
+   //polis tower
+   draw_logo();
+   
+   //prevents leaving the screen
+   border_wall();
+   
+   //draw ground
+   for(uint16_t inc_y = 0; inc_y < SCREEN_HEIGHT; inc_y++){
+      for(uint16_t inc_x = 0; inc_x < SCREEN_WIDTH; inc_x++){
+         switch(get_environ_data(inc_x, inc_y)){
+            case 0x00:
+               break;
+            case 0x01:
+               background[inc_y * SCREEN_WIDTH + inc_x] = get_texture_pixel(inc_x, inc_y, rock_tex);
+               break;
+         }
+      }
+   }
+   
    draw_background();
    update_health_bar();
 }
@@ -481,10 +483,9 @@ void switch_to_game(){
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
 
-   uint16_t old_health = PLAYER.health;
    test_collisions();
    update_entitys();
    clear_dirty_entitys();
    render_entitys();
-   if(PLAYER.health != old_health)update_health_bar();
+   update_health_bar();
 }
