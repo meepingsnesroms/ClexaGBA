@@ -44,8 +44,9 @@ string make_header(string data){
 	working_data = data.substr(0,first_bracket);
 
 	//patch header
+	better_replace(working_data, 0, "#include <stdint.h>\n\n", "");
+	better_replace(working_data, 0, "static const", "ROM_DATA");
 	better_replace(working_data, 0, "uint32_t", "uint16_t");
-	better_replace(working_data, 0, "static", "/*static*/");
 	better_replace(working_data, 0, "_data[1]", "_data");
 
 	return working_data;
