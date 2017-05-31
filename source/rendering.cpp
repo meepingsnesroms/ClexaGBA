@@ -8,7 +8,7 @@
 #include "speedhacks.h"
 
 //use framebuffer for now
-static uint16_t *const vram = ((uint16_t*)0x06000000);
+static uint16_t *const vram = ((uint16_t*)VRAM);
 
 uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
 

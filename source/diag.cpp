@@ -9,7 +9,7 @@
 
 #define LINES_AT_ONCE 5
 
-char printf_buffer[100];
+char printf_buffer[200];
 
 static void reset_console(){
    UG_GUI* g = UG_CurrentGUI();
@@ -42,7 +42,7 @@ void gba_printf(char* str, ...){
       if(keys & KEY_B){
          break;
       }
-
+      
       VBlankIntrWait();
    }
    

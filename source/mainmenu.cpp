@@ -10,7 +10,6 @@
 #include "assets.h"
 #include "rendering.h"
 
-
 #define SELECTOR_COLOR C_GOLDEN_ROD
 #define NORMAL_COLOR   C_BLACK
 #define LIST_START_X   50
@@ -91,7 +90,7 @@ void draw_menu(){
             break;
          case 1:
             //Options button
-            //list_items((item*)NULL);//test, will be removed
+            //no options yet
             break;
          default:
             //do nothing

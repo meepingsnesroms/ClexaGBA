@@ -9,7 +9,7 @@
 #include "speedhacks.h"
 
 //using 240*160 16bit color, mode 3
-static uint16_t *const vram = ((uint16_t*)0x06000000);
+static uint16_t *const vram = ((uint16_t*)VRAM);
 UG_GUI screen_context;
 
 //used to make fake windows
