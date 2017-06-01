@@ -323,7 +323,6 @@ void move_player(void* me){
       this_ent.sprite.bitmap = clarke_front_data;
    }
    
-   
    if(this_ent.accel_x > 0){
       for(int8_t scoot = 0; scoot < this_ent.accel_x; scoot++){
          if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y) != 0x00){
@@ -386,6 +385,7 @@ void move_player(void* me){
    
 }
 
+/*
 void draw_logo(){
    entity polis;
    reset_entity(polis);
@@ -398,7 +398,7 @@ void draw_logo(){
    polis.active = true;
    draw_entity_background(polis);
    
-   /*
+ 
    entity logo;
    reset_entity(logo);
    conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
@@ -409,8 +409,9 @@ void draw_logo(){
    logo.sprite = {CLEXA_LOGO_FRAME_WIDTH, CLEXA_LOGO_FRAME_HEIGHT, bitmap_conv_ram};
    logo.active = true;
    draw_entity_background(logo);
-   */
+ 
 }
+*/
 
 void init_game(){
    enviroment_map    = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
@@ -420,7 +421,7 @@ void init_game(){
       bsod("Not enough memory!");
    }
    
-   conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);
+   //conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);
    
    //init music
    //not done yet
