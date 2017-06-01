@@ -58,6 +58,9 @@ typedef struct{
    uint16_t east;//level number to the right of this level
    uint16_t west;//level number to the left of this level
    
+   entity*  sprites;
+   uint16_t num_sprites;
+   
    uint16_t* background;//background bitmap
    uint16_t* foreground;//if a pixel is not transparent here it is solid in the collision map
 }level;

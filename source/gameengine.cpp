@@ -18,6 +18,14 @@
 #include "gametypes.h"
 #include "rendering.h"
 
+//level testing
+
+#include "../data/levels/level1.c.out"
+
+level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, level1_data/*foreground*/};
+
+//end of level testing
+
 static uint16_t keys;
 
 #define ENTITYS 20
@@ -127,52 +135,6 @@ void conv_16bpp_to_terrain(uint8_t* output, uint16_t* data, uint32_t size){
    }
 }
 
-void change_level(level* new_level, uint8_t direction){
-   //background
-   memcpy32(background, new_level->background, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
-   
-   //foreground
-   texture foreground_wrapper = {SCREEN_WIDTH, SCREEN_HEIGHT, new_level->foreground};
-   draw_texture(0, 0, foreground_wrapper);
-   
-   //terrain
-   conv_16bpp_to_terrain(enviroment_map, new_level->foreground, SCREEN_WIDTH * SCREEN_HEIGHT);
-   
-   //move player
-   switch(direction){
-      case DIR_UP:
-         PLAYER.y = SCREEN_HEIGHT - 1 - PLAYER.h;//put player on bottom of new screen
-         break;
-      case DIR_DOWN:
-         PLAYER.y = 0;//put player on top of new screen
-         break;
-      case DIR_LEFT:
-         PLAYER.x = SCREEN_WIDTH - 1 - PLAYER.w;//put player on right side of new screen
-         break;
-      case DIR_RIGHT:
-         PLAYER.x = 0;//put player on left side of new screen
-         break;
-      case DIR_NONE:
-         //put player in center of screen when starting
-         PLAYER.x = (SCREEN_WIDTH / 2) - (PLAYER.w / 2);
-         PLAYER.y = (SCREEN_HEIGHT / 2) - (PLAYER.h / 2);
-         break;
-         
-      default:
-         bsod("invalid derection parameter");
-         break;
-   }
-   
-   //clear entitys
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
-      if(characters[cnt].kill_on_exit){
-         characters[cnt].active = false;
-      }
-   }
-   
-   current_level = new_level;
-}
-
 bool crossed_border(entity& ent){
    if(ent.x < 0 || ent.y < 0){
       return true;
@@ -264,6 +226,55 @@ bool intersects_solid(entity& test){
       }
    }
    return false;
+}
+
+void change_level(level* new_level, uint8_t direction){
+   //background
+   memcpy32(background, new_level->background, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
+   
+   //foreground
+   texture foreground_wrapper = {SCREEN_WIDTH, SCREEN_HEIGHT, new_level->foreground};
+   draw_texture_background(0, 0, foreground_wrapper);//the foreground is put on the background bitmap to prevent entitys from overwriteing it
+   
+   //terrain
+   conv_16bpp_to_terrain(enviroment_map, new_level->foreground, SCREEN_WIDTH * SCREEN_HEIGHT);
+   
+   //move player
+   switch(direction){
+      case DIR_UP:
+         PLAYER.y = SCREEN_HEIGHT - 1 - PLAYER.h;//put player on bottom of new screen
+         break;
+      case DIR_DOWN:
+         PLAYER.y = 0;//put player on top of new screen
+         break;
+      case DIR_LEFT:
+         PLAYER.x = SCREEN_WIDTH - 1 - PLAYER.w;//put player on right side of new screen
+         break;
+      case DIR_RIGHT:
+         PLAYER.x = 0;//put player on left side of new screen
+         break;
+      case DIR_NONE:
+         //put player in center of screen when starting
+         PLAYER.x = (SCREEN_WIDTH / 2) - (PLAYER.w / 2);
+         PLAYER.y = (SCREEN_HEIGHT / 2) - (PLAYER.h / 2);
+         break;
+         
+      default:
+         bsod("invalid derection parameter");
+         break;
+   }
+   
+   //clear entitys
+   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+      if(characters[cnt].kill_on_exit){
+         characters[cnt].active = false;
+      }
+   }
+   
+   //render new entitys
+   render_entitys();
+   
+   current_level = new_level;
 }
 
 void fire_gun(void* me){
@@ -455,15 +466,16 @@ void init_game(){
 
 void switch_to_game(){
    //fill to black
-   fill_background(0x0000);
+   //fill_background(0x0000);
    
    //polis tower
-   draw_logo();
+   //draw_logo();
    
    //prevents leaving the screen
-   border_wall();
+   //border_wall();
    
    //draw ground
+   /*
    for(uint16_t inc_y = 0; inc_y < SCREEN_HEIGHT; inc_y++){
       for(uint16_t inc_x = 0; inc_x < SCREEN_WIDTH; inc_x++){
          switch(get_environ_data(inc_x, inc_y)){
@@ -475,6 +487,14 @@ void switch_to_game(){
          }
       }
    }
+   */
+   
+   
+   //load first level
+   change_level(&lvl1, DIR_NONE);
+   
+   //not yet
+   memset16(background, 0x0000, SCREEN_WIDTH * 30);
    
    draw_background();
    update_health_bar();

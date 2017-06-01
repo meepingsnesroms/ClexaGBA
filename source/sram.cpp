@@ -57,3 +57,16 @@ void format_save(){
    }
    make_valid_checksum();
 }
+
+bool is_first_run(){
+   uint8_t first_value = read_sram(0);
+   for(uint32_t count = 1; count < SRAM_SIZE; count++){
+      if(read_sram(count) != first_value){
+         //there are multiple different values, must have been written to
+         return false;
+      }
+   }
+   
+   //every value is the same, must me first run
+   return true;
+}

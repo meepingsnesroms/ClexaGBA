@@ -11,3 +11,4 @@ void make_valid_checksum();//sets sram checksum to checksum of existing data
 bool is_data_corrupt();//verifys the checksum
 
 void format_save();
+bool is_first_run();
