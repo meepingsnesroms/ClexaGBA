@@ -6,7 +6,7 @@ extern uint16_t* background;
 
 void init_renderer();
 
-void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size);
+//void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size);
 void invert_color(uint16_t* data, uint32_t size);
 uint16_t blend_color(uint16_t arg1, uint16_t arg2);
 

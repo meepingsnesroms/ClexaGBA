@@ -72,6 +72,7 @@ static UG_RESULT gba_draw_line(UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_CO
       return UG_RESULT_OK;
    }
    
+   //gotta do it the hard way :(
    UG_S16 n, dx, dy, sgndx, sgndy, dxabs, dyabs, x, y, drawx, drawy;
    
    dx = x2 - x1;

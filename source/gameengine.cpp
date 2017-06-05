@@ -7,10 +7,7 @@
 
 #include "assets.h"
 
-#include "../data/clexalogo.cdata"
-#include "../data/crosshair.cdata"
-#include "../data/polis.cdata"
-#include "../data/leveltest.cdata"
+#include "../data/crosshair.c.out"
 
 #include "uguishim.h"
 #include "inventory.h"
@@ -20,9 +17,11 @@
 
 //level testing
 
-#include "../data/levels/level1.c.out"
+//#include "../data/levels/level1.c.out"
+#include "../data/leveltest.c.out"
 
-level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, level1_data/*foreground*/};
+//level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, level1_data/*foreground*/};
+level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, leveltest_data/*foreground*/};
 
 //end of level testing
 
@@ -117,12 +116,14 @@ unsigned int cust_rand(){
    return (z1 ^ z2 ^ z3 ^ z4);
 }
 
+/*
 void conv_32bpp_to_terrain(uint8_t* output, uint32_t* data, uint32_t size){
    for(uint32_t cnt = 0; cnt < size; cnt++){
       //output[cnt] = data[cnt] & 0xFF;
       output[cnt] = data[cnt] & 0x01;
    }
 }
+*/
 
 void conv_16bpp_to_terrain(uint8_t* output, uint16_t* data, uint32_t size){
    for(uint32_t cnt = 0; cnt < size; cnt++){
@@ -385,34 +386,6 @@ void move_player(void* me){
    
 }
 
-/*
-void draw_logo(){
-   entity polis;
-   reset_entity(polis);
-   conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)polis_data[0], POLIS_FRAME_WIDTH * POLIS_FRAME_HEIGHT);
-   polis.x = 0;
-   polis.y = 15;//gba is 160 tall, image is 135
-   polis.w = POLIS_FRAME_WIDTH;
-   polis.h = POLIS_FRAME_HEIGHT;
-   polis.sprite = {POLIS_FRAME_WIDTH, POLIS_FRAME_HEIGHT, bitmap_conv_ram};
-   polis.active = true;
-   draw_entity_background(polis);
-   
- 
-   entity logo;
-   reset_entity(logo);
-   conv_32bpp_to_16(bitmap_conv_ram, (uint32_t*)clexa_logo_data[0], CLEXA_LOGO_FRAME_WIDTH * CLEXA_LOGO_FRAME_HEIGHT);
-   logo.x = 70;
-   logo.y = 0;
-   logo.w = CLEXA_LOGO_FRAME_WIDTH;
-   logo.h = CLEXA_LOGO_FRAME_HEIGHT;
-   logo.sprite = {CLEXA_LOGO_FRAME_WIDTH, CLEXA_LOGO_FRAME_HEIGHT, bitmap_conv_ram};
-   logo.active = true;
-   draw_entity_background(logo);
- 
-}
-*/
-
 void init_game(){
    enviroment_map    = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
    bitmap_conv_ram   = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
@@ -421,12 +394,11 @@ void init_game(){
       bsod("Not enough memory!");
    }
    
-   //conv_32bpp_to_terrain(enviroment_map, (uint32_t*)leveltest_data[0], SCREEN_WIDTH * SCREEN_HEIGHT);
-   
    //init music
    //not done yet
    
-   conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
+   memcpy16(crosshair, crosshair_data, 16 * 16);
+   //conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
    //fired crosshair
    memcpy(crosshair2, crosshair, 16 * 16 * sizeof(uint16_t));
@@ -466,36 +438,11 @@ void init_game(){
 }
 
 void switch_to_game(){
-   //fill to black
-   //fill_background(0x0000);
-   
-   //polis tower
-   //draw_logo();
-   
-   //prevents leaving the screen
-   //border_wall();
-   
-   //draw ground
-   /*
-   for(uint16_t inc_y = 0; inc_y < SCREEN_HEIGHT; inc_y++){
-      for(uint16_t inc_x = 0; inc_x < SCREEN_WIDTH; inc_x++){
-         switch(get_environ_data(inc_x, inc_y)){
-            case 0x00:
-               break;
-            case 0x01:
-               background[inc_y * SCREEN_WIDTH + inc_x] = get_texture_pixel(inc_x, inc_y, rock_tex);
-               break;
-         }
-      }
-   }
-   */
-   
    
    //load first level
    change_level(&lvl1, DIR_NONE);
    
-   //not yet
-   memset16(background, 0x0000, SCREEN_WIDTH * 30);
+   border_wall();//yes, trump style
    
    draw_background();
    update_health_bar();

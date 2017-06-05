@@ -19,6 +19,7 @@ void init_renderer(){
    }
 }
 
+#if 0
 void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size){
    for(uint32_t cnt = 0; cnt < size; cnt++){
       uint8_t visible = (data[cnt] >> 24) & 0xFF;
@@ -34,6 +35,7 @@ void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size){
       }
    }
 }
+#endif
 
 void invert_color(uint16_t* data, uint32_t size){
    for(uint32_t cnt = 0; cnt < size; cnt++){
