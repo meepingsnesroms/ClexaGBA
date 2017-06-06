@@ -14,11 +14,15 @@
 #include "speedhacks.h"
 #include "gametypes.h"
 #include "rendering.h"
+#include "diag.h"
 
 //level testing
+#define MAX_LEVELS 20
 
 //#include "../data/levels/level1.c.out"
 #include "../data/leveltest.c.out"
+
+level* level_nums[MAX_LEVELS];
 
 //level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, level1_data/*foreground*/};
 level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, leveltest_data/*foreground*/};
@@ -90,7 +94,7 @@ void reset_entity(entity& ent){
    ent.active = false;
    ent.kill_on_exit = true;
    ent.bullet = false;
-   ent.is_hit = false;
+   //ent.is_hit = false;
    ent.is_solid = false;
    ent.health = 100;
    ent.index  = -1;
@@ -177,7 +181,35 @@ void redraw_screen(){
    render_entitys();
 }
 
-bool collision_test(entity& chr1, entity& chr2){
+bool collision_inside(entity& chr1, entity& chr2){
+   //this function tests if the center of obj1 is in the bounding box of obj2
+   //or if the center of obj2 is in the bounding box of obj1
+   uint16_t mid_x_1 = chr1.x + (chr1.w / 2);
+   uint16_t mid_y_1 = chr1.y + (chr1.h / 2);
+   
+   uint16_t mid_x_2 = chr2.x + (chr2.w / 2);
+   uint16_t mid_y_2 = chr2.y + (chr2.h / 2);
+   
+   if (chr1.x <= mid_x_2 &&
+       chr1.x + chr1.w >= mid_x_2 &&
+       chr1.y <= mid_y_2 &&
+       chr1.h + chr1.y >= mid_y_2)
+   {
+      return true;
+   }
+   
+   if (chr2.x <= mid_x_1 &&
+       chr2.x + chr2.w >= mid_x_1 &&
+       chr2.y <= mid_y_1 &&
+       chr2.h + chr2.y >= mid_y_1)
+   {
+      return true;
+   }
+   
+   return false;
+}
+
+bool collision_touching(entity& chr1, entity& chr2){
    if (chr1.x < chr2.x + chr2.w &&
        chr1.x + chr1.w > chr2.x &&
        chr1.y < chr2.y + chr2.h &&
@@ -199,11 +231,13 @@ bool collision_test_point(entity& chr1, uint16_t x, uint16_t y){
    return false;
 }
 
+/*
 void test_collisions(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       for(uint8_t cmp = cnt + 1; cmp < ENTITYS; cmp++){
          if(characters[cnt].active && characters[cmp].active){
-            if(collision_test(characters[cnt], characters[cmp])){
+            //if(collision_touching(characters[cnt], characters[cmp])){
+            if(collision_inside(characters[cnt], characters[cmp])){
                characters[cnt].is_hit = true;
                characters[cmp].is_hit = true;
             }
@@ -211,10 +245,11 @@ void test_collisions(){
       }
    }
 }
+*/
 
 void update_entitys(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
-      if(characters[cnt].active && characters[cnt].frame_iterate){
+      if(characters[cnt].active && characters[cnt].frame_iterate != NULL){
          characters[cnt].frame_iterate(&characters[cnt]);
       }
    }
@@ -222,7 +257,8 @@ void update_entitys(){
 
 bool intersects_solid(entity& test){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
-      if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_test(test, characters[cnt])){
+      //if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_touching(test, characters[cnt])){
+      if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_inside(test, characters[cnt])){
          return true;
       }
    }
@@ -278,8 +314,45 @@ void change_level(level* new_level, uint8_t direction){
    current_level = new_level;
 }
 
+void level_teleporter(void* me){
+   entity& this_ent = *((entity*)me);
+   
+   if(collision_touching(PLAYER, this_ent)){
+      switch(this_ent.angle){
+         case 0://up
+         case 360://up
+            change_level(level_nums[current_level->north], DIR_UP);
+            break;
+            
+         case 90://right
+            change_level(level_nums[current_level->east], DIR_RIGHT);
+            break;
+            
+         case 180://down
+            change_level(level_nums[current_level->south], DIR_DOWN);
+            break;
+            
+         case 270://left
+            change_level(level_nums[current_level->west], DIR_LEFT);
+            break;
+            
+         default:
+            gba_printf("Angle:%d is not a cardinal direction!", this_ent.angle);
+            bsod("Invalid angle parameter!");
+            break;
+      }
+   }
+}
+
 void fire_gun(void* me){
    entity& this_ent = *((entity*)me);
+   if(collision_inside(PLAYER, this_ent)){
+      this_ent.sprite.bitmap = crosshair2;
+   }
+   else{
+      this_ent.sprite.bitmap = crosshair;
+   }
+   /*
    if(this_ent.is_hit){
       this_ent.sprite.bitmap = crosshair2;
       this_ent.is_hit = false;
@@ -287,6 +360,7 @@ void fire_gun(void* me){
    else{
       this_ent.sprite.bitmap = crosshair;
    }
+    */
 }
 
 void move_player(void* me){
@@ -324,6 +398,28 @@ void move_player(void* me){
       this_ent.sprite.bitmap = clarke_front_data;
    }
    
+   
+   //quick version, works only if there are no deep concave objects
+   if(this_ent.accel_x != 0 || this_ent.accel_y != 0){
+      uint16_t mid_x = this_ent.x + (this_ent.w / 2);
+      uint16_t mid_y = this_ent.y + (this_ent.h / 2);
+      
+      if(get_environ_data(mid_x + this_ent.accel_x, mid_y) == 0x00){
+         this_ent.x += this_ent.accel_x;
+         mid_x = this_ent.x + (this_ent.w / 2);//needs to be updated after change
+      }
+      
+      if(get_environ_data(mid_x, mid_y + this_ent.accel_y) == 0x00){
+         this_ent.y += this_ent.accel_y;
+      }
+
+      this_ent.accel_x = 0;
+      this_ent.accel_y = 0;
+   }
+   
+
+   
+#if 0
    if(this_ent.accel_x > 0){
       for(int8_t scoot = 0; scoot < this_ent.accel_x; scoot++){
          if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y) != 0x00){
@@ -383,6 +479,7 @@ void move_player(void* me){
       }
    }
    this_ent.accel_y = 0;
+#endif
    
 }
 
@@ -451,7 +548,7 @@ void switch_to_game(){
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
 
-   test_collisions();
+   //test_collisions();
    update_entitys();
    clear_dirty_entitys();
    render_entitys();

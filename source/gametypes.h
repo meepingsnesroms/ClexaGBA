@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+//#define ENTITY_SPECIFIC_DATA 10
+
 enum{
    DIR_NONE,
    DIR_UP,
@@ -33,7 +35,7 @@ typedef struct{
    bool active;//if this is entity is currently in use
    bool kill_on_exit;//if this is set remove the entity from the list on level exit
    bool bullet;
-   bool is_hit;
+   //bool is_hit;
    bool is_solid;
    uint16_t health;
    int8_t index;
@@ -41,6 +43,7 @@ typedef struct{
    int8_t sprite_y_offset;
    texture sprite;
    void (*frame_iterate)(void* me);
+   //uint8_t custom_data[ENTITY_SPECIFIC_DATA];
 }entity;
 
 typedef struct{
