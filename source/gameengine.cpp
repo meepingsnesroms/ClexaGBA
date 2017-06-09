@@ -20,12 +20,16 @@
 #define MAX_LEVELS 20
 
 //#include "../data/levels/level1.c.out"
+#include "../data/levels/level2.c.out"
 #include "../data/leveltest.c.out"
 
 level* level_nums[MAX_LEVELS];
 
+entity lvl_teleporter_ent;
+
 //level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, level1_data/*foreground*/};
-level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, leveltest_data/*foreground*/};
+level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 1/*east*/, 0/*west*/, &lvl_teleporter_ent/*sprites*/, 1/*num_sprites*/, title_screen_data/*background*/, leveltest_data/*foreground*/};
+level lvl2 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, &lvl_teleporter_ent/*sprites*/, 1/*num_sprites*/, title_screen_data/*background*/, level2_data/*foreground*/};
 
 //end of level testing
 
@@ -50,6 +54,7 @@ bool have_nightblood;
 entity& get_avail_entity(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       if(!characters[cnt].active){
+         characters[cnt].index = cnt;//keep the index current
          return characters[cnt];
       }
    }
@@ -94,10 +99,9 @@ void reset_entity(entity& ent){
    ent.active = false;
    ent.kill_on_exit = true;
    ent.bullet = false;
-   //ent.is_hit = false;
    ent.is_solid = false;
    ent.health = 100;
-   ent.index  = -1;
+   //ent.index  = -1;
    ent.sprite_x_offset = 0;
    ent.sprite_y_offset = 0;
    ent.sprite = {0, 0, NULL};
@@ -119,15 +123,6 @@ unsigned int cust_rand(){
    z4 = ((z4 & 4294967168U) << 13) ^ b;
    return (z1 ^ z2 ^ z3 ^ z4);
 }
-
-/*
-void conv_32bpp_to_terrain(uint8_t* output, uint32_t* data, uint32_t size){
-   for(uint32_t cnt = 0; cnt < size; cnt++){
-      //output[cnt] = data[cnt] & 0xFF;
-      output[cnt] = data[cnt] & 0x01;
-   }
-}
-*/
 
 void conv_16bpp_to_terrain(uint8_t* output, uint16_t* data, uint32_t size){
    for(uint32_t cnt = 0; cnt < size; cnt++){
@@ -231,22 +226,6 @@ bool collision_test_point(entity& chr1, uint16_t x, uint16_t y){
    return false;
 }
 
-/*
-void test_collisions(){
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
-      for(uint8_t cmp = cnt + 1; cmp < ENTITYS; cmp++){
-         if(characters[cnt].active && characters[cmp].active){
-            //if(collision_touching(characters[cnt], characters[cmp])){
-            if(collision_inside(characters[cnt], characters[cmp])){
-               characters[cnt].is_hit = true;
-               characters[cmp].is_hit = true;
-            }
-         }
-      }
-   }
-}
-*/
-
 void update_entitys(){
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].active && characters[cnt].frame_iterate != NULL){
@@ -276,6 +255,9 @@ void change_level(level* new_level, uint8_t direction){
    //terrain
    conv_16bpp_to_terrain(enviroment_map, new_level->foreground, SCREEN_WIDTH * SCREEN_HEIGHT);
    
+   //add invisible border wall, yes, trump style
+   border_wall();
+   
    //move player
    switch(direction){
       case DIR_UP:
@@ -302,14 +284,23 @@ void change_level(level* new_level, uint8_t direction){
    }
    
    //clear entitys
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].kill_on_exit){
          characters[cnt].active = false;
       }
    }
    
-   //render new entitys
-   render_entitys();
+   //add levels new entitys
+   for(uint16_t cnt = 0; cnt < new_level->num_sprites; cnt++){
+      entity& new_sprite  = get_avail_entity();
+      int16_t old_index = new_sprite.index;
+      
+      new_sprite = new_level->sprites[cnt];
+      new_sprite.index = old_index;
+   }
+   
+   //clear outdated framebuffer
+   redraw_screen();
    
    current_level = new_level;
 }
@@ -352,15 +343,6 @@ void fire_gun(void* me){
    else{
       this_ent.sprite.bitmap = crosshair;
    }
-   /*
-   if(this_ent.is_hit){
-      this_ent.sprite.bitmap = crosshair2;
-      this_ent.is_hit = false;
-   }
-   else{
-      this_ent.sprite.bitmap = crosshair;
-   }
-    */
 }
 
 void move_player(void* me){
@@ -503,7 +485,21 @@ void init_game(){
    
    for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
       reset_entity(characters[cnt]);
+      characters[cnt].index = cnt;
    }
+   
+   
+   //level testing
+   for(uint8_t cnt = 0; cnt < MAX_LEVELS; cnt++){
+      level_nums[cnt] = NULL;
+   }
+   
+   //just for testing
+   level_nums[0] = &lvl1;
+   level_nums[1] = &lvl2;
+   
+   //end of level testing
+   
    
    //effects health bar rendering
    have_nightblood = false;
@@ -520,6 +516,7 @@ void init_game(){
    PLAYER.sprite = {16, 16, clarke_front_data};
    PLAYER.frame_iterate = move_player;
    
+   /*
    entity& thing1 = get_avail_entity();
    reset_entity(thing1);
    thing1.x = 50;
@@ -532,14 +529,27 @@ void init_game(){
    thing1.index  = 1;
    thing1.sprite = {16, 16, crosshair};
    thing1.frame_iterate = fire_gun;
+   */
+   
+   reset_entity(lvl_teleporter_ent);
+   lvl_teleporter_ent.x = 200;
+   lvl_teleporter_ent.y = 80;
+   lvl_teleporter_ent.w = 16;
+   lvl_teleporter_ent.h = 16;
+   lvl_teleporter_ent.angle = 90;//determinse what level is telepoted to
+   lvl_teleporter_ent.active = true;
+   lvl_teleporter_ent.kill_on_exit = true;
+   lvl_teleporter_ent.is_solid = false;
+   //lvl_teleporter_ent.index  = 1;
+   lvl_teleporter_ent.sprite = {16, 16, crosshair};
+   lvl_teleporter_ent.frame_iterate = level_teleporter;
+   
 }
 
 void switch_to_game(){
    
    //load first level
    change_level(&lvl1, DIR_NONE);
-   
-   border_wall();//yes, trump style
    
    draw_background();
    update_health_bar();
