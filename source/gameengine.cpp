@@ -52,14 +52,14 @@ level* current_level;
 bool have_nightblood;
 
 entity& get_avail_entity(){
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
       if(!characters[cnt].active){
          characters[cnt].index = cnt;//keep the index current
          return characters[cnt];
       }
    }
    bsod("Entity overflow!");
-   return PLAYER;//this is for the compiler warning only, there is no coming back after bsod
+   return *(entity*)NULL;//this is for the compiler warning only, there is no coming back after bsod
 }
 
 inline void set_environ_data(uint16_t x, uint16_t y, uint8_t data){
@@ -73,6 +73,7 @@ inline uint8_t get_environ_data(uint16_t x, uint16_t y){
 }
 
 void border_wall(){
+   //memset32(enviroment_map, 0x01010101, SCREEN_WIDTH / 4);
    for(uint16_t cnt = 0; cnt < SCREEN_WIDTH; cnt++){
       set_environ_data(cnt, 0, 0x01);
       set_environ_data(cnt, SCREEN_HEIGHT - 1, 0x01);
@@ -146,7 +147,7 @@ bool crossed_border(entity& ent){
 }
 
 void render_entitys(){
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].active){
          draw_entity(characters[cnt]);
       }
@@ -154,7 +155,7 @@ void render_entitys(){
 }
 
 void clear_dirty_entitys(){
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].dirty.is_dirty){
          restore_background(characters[cnt]);
       }
@@ -172,7 +173,10 @@ void redraw_screen(){
    draw_background();
    
    //draw entitys
-   clear_dirty_entitys();
+   //the background was just drawn so there are no dirty segments left
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+      characters[cnt].dirty.is_dirty = false;
+   }
    render_entitys();
 }
 
@@ -227,7 +231,7 @@ bool collision_test_point(entity& chr1, uint16_t x, uint16_t y){
 }
 
 void update_entitys(){
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].active && characters[cnt].frame_iterate != NULL){
          characters[cnt].frame_iterate(&characters[cnt]);
       }
@@ -235,7 +239,7 @@ void update_entitys(){
 }
 
 bool intersects_solid(entity& test){
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
       //if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_touching(test, characters[cnt])){
       if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_inside(test, characters[cnt])){
          return true;
@@ -483,14 +487,14 @@ void init_game(){
    memcpy(crosshair2, crosshair, 16 * 16 * sizeof(uint16_t));
    invert_color(crosshair2, 16 * 16);
    
-   for(uint8_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
       reset_entity(characters[cnt]);
       characters[cnt].index = cnt;
    }
    
    
    //level testing
-   for(uint8_t cnt = 0; cnt < MAX_LEVELS; cnt++){
+   for(uint16_t cnt = 0; cnt < MAX_LEVELS; cnt++){
       level_nums[cnt] = NULL;
    }
    

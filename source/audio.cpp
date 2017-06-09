@@ -12,23 +12,13 @@
 #include "diag.h"
 #include "speedhacks.h"
 
-#include "../data/smallmiku.cdata"
-//#include "../data/toowak_coats.cdata"
-
-//int8_t* test_data;
-//uint32_t test_data_length = 32000;
-//uint32_t test_data_length = smallmiku_raw_len;
-//uint32_t test_data_freq   = 21024;
-//uint32_t test_data_freq   = 16000;
-//uint32_t test_data_freq   = 48000;
+//#include "../data/smallmiku.cdata"
+#include "../data/smallmiku_clean.cdata"
 
 //this file is based on the example from http://deku.gbadev.org/program/sound2.html
 
 #define SOUND_ENABLE    SNDSTAT_ENABLE
-#define TIMER_INTERRUPT TIMER_IRQ
-#define TIMER_ENABLE    TIMER_START
 #define TIMER_CASCADE   TIMER_COUNT
-#define DMA_WORD        DMA32
 #define DMA_MODE_FIFO   DMA_SPECIAL
 
 int8_t*  pcm_data;
@@ -36,9 +26,7 @@ uint32_t pcm_offset;
 uint32_t pcm_size;
 volatile uint8_t  active_buffer;
 volatile uint32_t audio_buffer[2][88];//352 bytes, 21024hz
-
 volatile bool     loop_audio;
-//volatile uint32_t dma_start_addr;
 
 inline uint32_t swap32(uint32_t ui){
    ui = (ui >> 24) |
@@ -59,20 +47,19 @@ static void swap_buffer(){
    
    //switch buffer
    REG_DMA1SAD = (uint32_t) &audio_buffer[active_buffer][0];
-   REG_DMA1CNT = DMA_DST_FIXED | DMA_REPEAT | DMA_WORD | DMA_MODE_FIFO | DMA_ENABLE;
+   REG_DMA1CNT = DMA_REPEAT | DMA32 | DMA_MODE_FIFO | DMA_ENABLE | DMA_SRC_INC | DMA_DST_INC;
    
-   if(pcm_offset + 352 > pcm_size){
+   if(pcm_offset + (88 * 4) > pcm_size){
       //end of pcm buffer
       uint32_t remainder = pcm_size - pcm_offset;
       
       if(loop_audio){
          pcm_offset = 0;
-         memcpy32((void*)&audio_buffer[old_buffer][0], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
-         //uint32_t* pcm_32 = (uint32_t*)(pcm_data + pcm_offset)
+         uint32_t* pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
          for(uint16_t count = 0; count < 88; count++){
-            audio_buffer[old_buffer][count] = swap32(audio_buffer[old_buffer][count]);
+            audio_buffer[old_buffer][count] = swap32(pcm_32[count]);
          }
-         pcm_offset += 352;
+         pcm_offset += 88 * 4;
       }
       else{
          //kill the audio to prevent an overflow
@@ -86,50 +73,35 @@ static void swap_buffer(){
    }
    else{
       //copy a full buffer
-      memcpy32((void*)&audio_buffer[old_buffer][0], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
+      uint32_t* pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
       for(uint16_t count = 0; count < 88; count++){
-         audio_buffer[old_buffer][count] = swap32(audio_buffer[old_buffer][count]);
+         audio_buffer[old_buffer][count] = swap32(pcm_32[count]);
       }
-      pcm_offset += 352;
+      pcm_offset += 88 * 4;
    }
 
 }
-
-/*
-static void block_overrun(){
-   if(loop_audio){
-      //kill the audio to prevent an overflow
-      REG_DMA1CNT = 0;
-      
-      //restart at the begining
-      REG_DMA1SAD = dma_start_addr;
-      REG_DMA1CNT = DMA_DST_FIXED | DMA_REPEAT | DMA_WORD | DMA_MODE_FIFO | DMA_ENABLE;
-   }
-   else{
-      //kill the audio to prevent an overflow
-      REG_DMA1CNT = 0;
-      
-      //disable audio timers
-      REG_TM0CNT_H = 0;
-      REG_TM1CNT_H = 0;
-      irqDisable(IRQ_TIMER1);
-   }
-   
-   //REG_IF = IRQ_TIMER1;//clear interrupt
-}
-*/
 
 static void set_play_buffer(int8_t* data, uint32_t freq, uint32_t sample_length){
    pcm_data = data;
    pcm_offset = 0;
    pcm_size = (sample_length / 4) * 4;//cant do non multiple of 4
    
+   uint32_t* pcm_32;
    active_buffer = 0;
-   memcpy32((void*)&audio_buffer[0][0], pcm_data + pcm_offset, 88);//352 bytes = 88 int32
+   
+   //fill both buffers
+   pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
    for(uint16_t count = 0; count < 88; count++){
-      audio_buffer[0][count] = swap32(audio_buffer[0][count]);
+      audio_buffer[0][count] = swap32(pcm_32[count]);
    }
-   pcm_offset += 352;
+   pcm_offset += 88 * 4;
+   
+   pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
+   for(uint16_t count = 0; count < 88; count++){
+      audio_buffer[1][count] = swap32(pcm_32[count]);
+   }
+   pcm_offset += 88 * 4;
    
    REG_SOUNDCNT_L = 0;
    REG_SOUNDCNT_H = SNDA_VOL_100 | SNDA_L_ENABLE | SNDA_R_ENABLE | SNDA_RESET_FIFO;
@@ -140,16 +112,16 @@ static void set_play_buffer(int8_t* data, uint32_t freq, uint32_t sample_length)
    //REG_DMA1SAD = (uint32_t) data;
    REG_DMA1SAD = (uint32_t) &audio_buffer[0][0];
    REG_DMA1DAD = (uint32_t) &(DSOUND_FIFOA);
-   REG_DMA1CNT = DMA_REPEAT | DMA_WORD | DMA_MODE_FIFO | DMA_ENABLE | DMA_SRC_INC | DMA_DST_INC;
+   REG_DMA1CNT = DMA_REPEAT | DMA32 | DMA_MODE_FIFO | DMA_ENABLE | DMA_SRC_INC | DMA_DST_INC;
    
    REG_TM0CNT_L = 65536 - (16777216 / freq);
    //REG_TM0CNT_L=0xFBE8; //16khz playback freq
-   REG_TM0CNT_H = TIMER_ENABLE;
+   REG_TM0CNT_H = TIMER_START;
    
    //REG_TM1CNT_L = 65536 - sample_length;
    //REG_TM1CNT_L=0x7098; //0xffff-the number of samples to play
-   REG_TM1CNT_L = 0xFFFF - 88; //0xffff-the number of samples to play
-   REG_TM1CNT_H = TIMER_CASCADE | TIMER_INTERRUPT | TIMER_ENABLE;
+   REG_TM1CNT_L = 0xFFFF - 88 * 4 + 4/*to remove clicks*/; //0xffff-the number of samples to play
+   REG_TM1CNT_H = TIMER_CASCADE | TIMER_IRQ | TIMER_START;
    irqEnable(IRQ_TIMER1);
 }
 
@@ -171,13 +143,19 @@ void play_music(int8_t* data, uint32_t freq, uint32_t sample_length){
 }
 
 void stop_music(){
+   //kill audio
+   REG_DMA1CNT = 0;
    
+   //disable audio timers
+   REG_TM0CNT_H = 0;
+   REG_TM1CNT_H = 0;
+   irqDisable(IRQ_TIMER1);
 }
 
 void play_test(){
    //gba_printf("dma value %08x", DMA_REPEAT | DMA_WORD | DMA_MODE_FIFO | DMA_ENABLE | DMA_SRC_INC | DMA_DST_INC);
    //gba_printf("sound fifo a %08x", (uint32_t) &(DSOUND_FIFOA));
    //gba_printf("sndcnt h %04x", SNDA_VOL_100 | SNDA_L_ENABLE | SNDA_R_ENABLE | SNDA_RESET_FIFO);
-   play_music((int8_t*)smallmiku_raw, 21024, smallmiku_raw_len);
-   //play_effect
+   //play_music((int8_t*)smallmiku_raw, 21024, smallmiku_raw_len);
+   play_music((int8_t*)smallmiku_clean_raw, 21024, smallmiku_clean_raw_len);
 }
