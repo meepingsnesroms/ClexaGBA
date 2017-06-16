@@ -7,9 +7,7 @@
 #include "gametypes.h"
 #include "speedhacks.h"
 
-//use framebuffer for now
-static uint16_t *const vram = ((uint16_t*)VRAM);
-
+uint16_t* vram = ((uint16_t*)VRAM);
 uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 void init_renderer(){
@@ -124,7 +122,10 @@ void draw_texture(int32_t x, int32_t y, texture& tex){
          }
       }
    }
+}
 
+void draw_texture_from_midpoint(int32_t x, int32_t y, texture& tex){
+   draw_texture(x - (tex.w / 2), y - (tex.h / 2), tex);
 }
 
 void draw_texture_background(int32_t x, int32_t y, texture& tex){

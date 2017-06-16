@@ -2,6 +2,7 @@
 
 #include "gametypes.h"
 
+extern uint16_t* vram;
 extern uint16_t* background;
 
 void init_renderer();
@@ -15,6 +16,7 @@ void restore_background(int32_t x, int32_t y, int32_t w, int32_t h);
 void restore_background(entity& ent);
 
 void draw_texture(int32_t x, int32_t y, texture& tex);
+void draw_texture_from_midpoint(int32_t x, int32_t y, texture& tex);
 void draw_texture_background(int32_t x, int32_t y, texture& tex);
 
 void draw_entity(entity& ent);

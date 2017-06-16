@@ -7,9 +7,9 @@
 #include "gameengine.h"
 #include "uguishim.h"
 #include "speedhacks.h"
+#include "rendering.h"
 
 //using 240*160 16bit color, mode 3
-static uint16_t *const vram = ((uint16_t*)VRAM);
 UG_GUI screen_context;
 
 //used to make fake windows
@@ -45,7 +45,7 @@ static UG_RESULT gba_fill_square(int16_t x, int16_t y, int16_t x2, int16_t y2, u
    fixed |= color << 10;//blue
    fixed |= (color & 0x07C0) >> 1;//green, use top 5 of 6 green bits
 
-   for(int16_t cnt_y = y; cnt_y <= y2; cnt_y++){
+   for(int32_t cnt_y = y; cnt_y <= y2; cnt_y++){
       memset16(&vram[x + (cnt_y * SCREEN_WIDTH)], fixed, x2 - x + 1);
    }
    
@@ -73,7 +73,8 @@ static UG_RESULT gba_draw_line(UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_CO
    }
    
    //gotta do it the hard way :(
-   UG_S16 n, dx, dy, sgndx, sgndy, dxabs, dyabs, x, y, drawx, drawy;
+   //UG_S16 n, dx, dy, sgndx, sgndy, dxabs, dyabs, x, y, drawx, drawy;
+   int32_t n, dx, dy, sgndx, sgndy, dxabs, dyabs, x, y, drawx, drawy;
    
    dx = x2 - x1;
    dy = y2 - y1;

@@ -2,16 +2,9 @@
 #include <math.h>
 
 #include "gpumath.h"
+#include "trig.h"
 
 vgpu_t vgpu;
-
-inline double sin_deg(double angle){
-   return sin(angle * M_PI / 180.0);
-}
-
-inline double cos_deg(double angle){
-   return cos(angle * M_PI / 180.0);
-}
 
 inline uint16_t get_rot_pixel(int32_t x, int32_t y){
    int32_t angle = vgpu.output.angle;
@@ -23,6 +16,8 @@ inline uint16_t get_rot_pixel(int32_t x, int32_t y){
 
 inline uint16_t get_scale_pixel(int32_t x, int32_t y){
    //0.0,0.0 is top left corner, 1.0,1.0 is bottom right corner
+   //float flt_x = x / vgpu.output.w * vgpu.input.w;
+   //float flt_y = y / vgpu.output.h * vgpu.input.h;
    float flt_x = x;
    float flt_y = y;
    
