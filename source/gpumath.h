@@ -2,14 +2,14 @@
 
 typedef struct{
    struct{
-      int16_t w;
-      int16_t h;
+      int32_t w;
+      int32_t h;
       uint16_t* data;
    }input;
    struct{
-      int16_t w;
-      int16_t h;
-      uint16_t angle;
+      int32_t w;
+      int32_t h;
+      int32_t angle;
       uint16_t* data;
    }output;
 }vgpu_t;

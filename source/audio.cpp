@@ -55,7 +55,7 @@ static void swap_buffer(){
       if(loop_audio){
          pcm_offset = 0;
          uint32_t* pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
-         for(uint16_t count = 0; count < 88; count++){
+         for(uint32_t count = 0; count < 88; count++){
             audio_buffer[old_buffer][count] = swap32(pcm_32[count]);
          }
          pcm_offset += 88 * 4;
@@ -73,7 +73,7 @@ static void swap_buffer(){
    else{
       //copy a full buffer
       uint32_t* pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
-      for(uint16_t count = 0; count < 88; count++){
+      for(uint32_t count = 0; count < 88; count++){
          audio_buffer[old_buffer][count] = swap32(pcm_32[count]);
       }
       pcm_offset += 88 * 4;
@@ -91,13 +91,13 @@ static void set_play_buffer(int8_t* data, uint32_t freq, uint32_t sample_length)
    
    //fill both buffers
    pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
-   for(uint16_t count = 0; count < 88; count++){
+   for(uint32_t count = 0; count < 88; count++){
       audio_buffer[0][count] = swap32(pcm_32[count]);
    }
    pcm_offset += 88 * 4;
    
    pcm_32 = (uint32_t*)(pcm_data + pcm_offset);
-   for(uint16_t count = 0; count < 88; count++){
+   for(uint32_t count = 0; count < 88; count++){
       audio_buffer[1][count] = swap32(pcm_32[count]);
    }
    pcm_offset += 88 * 4;

@@ -8,7 +8,7 @@
 
 item     currently_held_items[MAX_HELD_ITEMS];
 item     formatted_item_list[MAX_HELD_ITEMS];
-uint16_t total_items;
+uint32_t total_items;
 
 static char make_lowercase(char chr){
    //leave lowercase alone
@@ -27,17 +27,17 @@ static void make_menu_readable_item_list(){
    
 }
 
-uint16_t get_last_item(){
-   for(int16_t cnt = MAX_HELD_ITEMS - 1; cnt > -1; cnt++){
+uint32_t get_last_item(){
+   for(int32_t cnt = MAX_HELD_ITEMS - 1; cnt > -1; cnt++){
       if(currently_held_items[cnt].active){
          return cnt;
       }
    }
 }
 
-void fill_hole(uint16_t hole){
+void fill_hole(uint32_t hole){
    //replaces index at hole with last item
-   uint16_t last_item = get_last_item();
+   uint32_t last_item = get_last_item();
    currently_held_items[hole] = currently_held_items[last_item];
    currently_held_items[last_item].active = false;
 }
@@ -48,7 +48,7 @@ void add_item(item& new_item){
 }
 
 
-void remove_item(uint16_t index){
+void remove_item(uint32_t index){
    currently_held_items[index].active = false;
    if(index != total_items - 1){
       fill_hole(index);
@@ -88,7 +88,7 @@ void init_inventory(){
    item* test_items = currently_held_items;
    total_items = MAX_HELD_ITEMS;
    char data_str[20];
-   for(uint8_t cnt = 1; cnt < MAX_HELD_ITEMS; cnt++){
+   for(uint32_t cnt = 1; cnt < MAX_HELD_ITEMS; cnt++){
       strcpy(test_items[cnt].name, "FkItem");
       strcat(test_items[cnt].name, itoa(cnt, data_str, 10));
       test_items[cnt].item_image.bitmap = NULL;

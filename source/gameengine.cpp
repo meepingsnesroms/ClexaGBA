@@ -43,14 +43,14 @@ uint16_t  crosshair2[16 * 16];
 
 entity   characters[ENTITYS];
 uint8_t* enviroment_map;//map of terrain type
-uint8_t  num_active_characters;
+int32_t  num_active_characters;
 
 level* current_level;
 
 bool have_nightblood;
 
 entity& get_avail_entity(){
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       if(!characters[cnt].active){
          characters[cnt].index = cnt;//keep the index current
          return characters[cnt];
@@ -60,24 +60,24 @@ entity& get_avail_entity(){
    return *(entity*)NULL;//this is for the compiler warning only, there is no coming back after bsod
 }
 
-inline void set_environ_data(uint16_t x, uint16_t y, uint8_t data){
-   uint32_t offset = y * SCREEN_WIDTH + x;
+inline void set_environ_data(int32_t x, int32_t y, uint8_t data){
+   int32_t offset = y * SCREEN_WIDTH + x;
    enviroment_map[offset] = data;
 }
 
-inline uint8_t get_environ_data(uint16_t x, uint16_t y){
-   uint32_t offset = y * SCREEN_WIDTH + x;
+inline uint8_t get_environ_data(int32_t x, int32_t y){
+   int32_t offset = y * SCREEN_WIDTH + x;
    return enviroment_map[offset];
 }
 
 void border_wall(){
    //memset32(enviroment_map, 0x01010101, SCREEN_WIDTH / 4);
-   for(uint16_t cnt = 0; cnt < SCREEN_WIDTH; cnt++){
+   for(int32_t cnt = 0; cnt < SCREEN_WIDTH; cnt++){
       set_environ_data(cnt, 0, 0x01);
       set_environ_data(cnt, SCREEN_HEIGHT - 1, 0x01);
    }
    
-   for(uint16_t cnt = 0; cnt < SCREEN_HEIGHT; cnt++){
+   for(int32_t cnt = 0; cnt < SCREEN_HEIGHT; cnt++){
       set_environ_data(0, cnt, 0x01);
       set_environ_data(SCREEN_WIDTH - 1, cnt, 0x01);
    }
@@ -145,7 +145,7 @@ bool crossed_border(entity& ent){
 }
 
 void render_entitys(){
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].active){
          draw_entity(characters[cnt]);
       }
@@ -153,7 +153,7 @@ void render_entitys(){
 }
 
 void clear_dirty_entitys(){
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].dirty.is_dirty){
          restore_background(characters[cnt]);
       }
@@ -172,7 +172,7 @@ void redraw_screen(){
    
    //draw entitys
    //the background was just drawn so there are no dirty segments left
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       characters[cnt].dirty.is_dirty = false;
    }
    render_entitys();
@@ -181,11 +181,11 @@ void redraw_screen(){
 bool collision_inside(entity& chr1, entity& chr2){
    //this function tests if the center of obj1 is in the bounding box of obj2
    //or if the center of obj2 is in the bounding box of obj1
-   int16_t mid_x_1 = chr1.x + (chr1.w / 2);
-   int16_t mid_y_1 = chr1.y + (chr1.h / 2);
+   int32_t mid_x_1 = chr1.x + (chr1.w / 2);
+   int32_t mid_y_1 = chr1.y + (chr1.h / 2);
    
-   int16_t mid_x_2 = chr2.x + (chr2.w / 2);
-   int16_t mid_y_2 = chr2.y + (chr2.h / 2);
+   int32_t mid_x_2 = chr2.x + (chr2.w / 2);
+   int32_t mid_y_2 = chr2.y + (chr2.h / 2);
    
    if (chr1.x <= mid_x_2 &&
        chr1.x + chr1.w >= mid_x_2 &&
@@ -217,7 +217,7 @@ bool collision_touching(entity& chr1, entity& chr2){
    return false;
 }
 
-bool collision_test_point(entity& chr1, int16_t x, int16_t y){
+bool collision_test_point(entity& chr1, int32_t x, int32_t y){
    if (chr1.x <= x &&
        chr1.x + chr1.w >= x &&
        chr1.y <= y &&
@@ -229,7 +229,7 @@ bool collision_test_point(entity& chr1, int16_t x, int16_t y){
 }
 
 void update_entitys(){
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].active && characters[cnt].frame_iterate != NULL){
          characters[cnt].frame_iterate(&characters[cnt]);
       }
@@ -237,7 +237,7 @@ void update_entitys(){
 }
 
 bool intersects_solid(entity& test){
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       //if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_touching(test, characters[cnt])){
       if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_inside(test, characters[cnt])){
          return true;
@@ -286,16 +286,16 @@ void change_level(level* new_level, uint8_t direction){
    }
    
    //clear entitys
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       if(characters[cnt].kill_on_exit){
          characters[cnt].active = false;
       }
    }
    
    //add levels new entitys
-   for(uint16_t cnt = 0; cnt < new_level->num_sprites; cnt++){
+   for(int32_t cnt = 0; cnt < new_level->num_sprites; cnt++){
       entity& new_sprite  = get_avail_entity();
-      int16_t old_index = new_sprite.index;
+      int32_t old_index = new_sprite.index;
       
       new_sprite = new_level->sprites[cnt];
       new_sprite.index = old_index;
@@ -385,8 +385,8 @@ void move_player(void* me){
    
    //quick version, works only if there are no deep concave objects
    if(this_ent.accel_x != 0 || this_ent.accel_y != 0){
-      int16_t mid_x = this_ent.x + (this_ent.w / 2);
-      int16_t mid_y = this_ent.y + (this_ent.h / 2);
+      int32_t mid_x = this_ent.x + (this_ent.w / 2);
+      int32_t mid_y = this_ent.y + (this_ent.h / 2);
       
       if(get_environ_data(mid_x + this_ent.accel_x, mid_y) == 0x00){
          this_ent.x += this_ent.accel_x;
@@ -405,7 +405,7 @@ void move_player(void* me){
    
 #if 0
    if(this_ent.accel_x > 0){
-      for(int8_t scoot = 0; scoot < this_ent.accel_x; scoot++){
+      for(int32_t scoot = 0; scoot < this_ent.accel_x; scoot++){
          if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y) != 0x00){
             break;//cant walk into a wall
          }
@@ -419,7 +419,7 @@ void move_player(void* me){
       }
    }
    else if(this_ent.accel_x < 0){
-      for(int8_t scoot = 0; scoot > this_ent.accel_x; scoot--){
+      for(int32_t scoot = 0; scoot > this_ent.accel_x; scoot--){
          if(get_environ_data(this_ent.x - 1, this_ent.y) != 0x00){
             break;//cant walk into a wall
          }
@@ -435,7 +435,7 @@ void move_player(void* me){
    this_ent.accel_x = 0;
    
    if(this_ent.accel_y > 0){
-      for(int8_t scoot = 0; scoot < this_ent.accel_y; scoot++){
+      for(int32_t scoot = 0; scoot < this_ent.accel_y; scoot++){
          if(get_environ_data(this_ent.x, this_ent.y + this_ent.h/* + 1*/) != 0x00){
             break;//cant walk into a wall
          }
@@ -449,7 +449,7 @@ void move_player(void* me){
       }
    }
    else if(this_ent.accel_y < 0){
-      for(int8_t scoot = 0; scoot > this_ent.accel_y; scoot--){
+      for(int32_t scoot = 0; scoot > this_ent.accel_y; scoot--){
          if(get_environ_data(this_ent.x, this_ent.y - 1) != 0x00){
             break;//cant walk into a wall
          }
@@ -479,20 +479,19 @@ void init_game(){
    //not done yet
    
    memcpy16(crosshair, crosshair_data, 16 * 16);
-   //conv_32bpp_to_16(crosshair, (uint32_t*)crosshair_data[0], 16 * 16);
    
    //fired crosshair
    memcpy(crosshair2, crosshair, 16 * 16 * sizeof(uint16_t));
    invert_color(crosshair2, 16 * 16);
    
-   for(uint16_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
       reset_entity(characters[cnt]);
       characters[cnt].index = cnt;
    }
    
    
    //level testing
-   for(uint16_t cnt = 0; cnt < MAX_LEVELS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_LEVELS; cnt++){
       level_nums[cnt] = NULL;
    }
    

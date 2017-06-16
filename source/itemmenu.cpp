@@ -40,11 +40,11 @@ static void message_cb(UG_MESSAGE* msg_ptr){
    //do nothing
 }
 
-item* list_items(item* items, uint16_t total_items, bool exit_allowed){
+item* list_items(item* items, uint32_t total_items, bool exit_allowed){
    UG_WINDOW   window;
    UG_OBJECT   objects[MAX_LIST_SIZE];
    UG_TEXTBOX  text_entrys[MAX_LIST_SIZE];
-   uint8_t     active_item = 0;
+   uint32_t     active_item = 0;
    
    UG_WindowCreate(&window, objects, MAX_LIST_SIZE, message_cb);
    
@@ -56,8 +56,8 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
    
    UG_WindowSetForeColor(&window, C_WHITE);
    
-   uint16_t current_y = ITEM_LIST_OFFSET_Y;
-   for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
+   uint32_t current_y = ITEM_LIST_OFFSET_Y;
+   for(uint32_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
       UG_TextboxCreate(&window, &text_entrys[cnt] /*(UG_TEXTBOX*)*/, cnt /*id*/, ITEM_LIST_OFFSET_X, current_y, ITEM_LIST_OFFSET_X + ITEM_WIDTH - 1, current_y + ITEM_HEIGHT - 1);
       UG_TextboxSetFont(&window, cnt /*id*/, &FONT_8X12);
       UG_TextboxSetAlignment(&window, cnt /*id*/, ALIGN_CENTER);
@@ -72,9 +72,9 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
 
    //frame loop
    uint16_t window_background_color = UG_WindowGetBackColor(&window);
-   uint8_t old_active_item;
-   uint16_t shifted_by = 0;
-   uint16_t old_shifted_by;
+   uint32_t old_active_item;
+   uint32_t shifted_by = 0;
+   uint32_t old_shifted_by;
    bool needs_render = true;
    while(1){
       old_active_item = active_item;
@@ -100,7 +100,7 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
             if(shifted_by > 0){
                shifted_by--;
                //need to fetch next item from list and push list down
-               for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
+               for(uint32_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
                   UG_TextboxSetText(&window, cnt /*id*/, items[cnt + shifted_by].name);
                }
             }
@@ -116,7 +116,7 @@ item* list_items(item* items, uint16_t total_items, bool exit_allowed){
             if(active_item + shifted_by < total_items - 1){
                shifted_by++;
                //need to fetch next item from list and push list up
-               for(uint8_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
+               for(uint32_t cnt = 0; cnt < MAX_LIST_SIZE; cnt++){
                   UG_TextboxSetText(&window, cnt /*id*/, items[cnt + shifted_by].name);
                }
             }

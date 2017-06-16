@@ -1,0 +1,4 @@
+32bit ints are much faster than 16bit:
+http://www.coranac.com/tonc/text/affine.htm
+
+Thus uint16_t should be used only when required for hardware registers, pixel colors or data arrays.

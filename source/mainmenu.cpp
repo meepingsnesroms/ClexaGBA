@@ -19,9 +19,9 @@
 #define ENTRY_HEIGHT         10
 #define CORNER_RADIUS        3
 
-static uint8_t selected_option;
-static uint8_t total_items = 2;
-static char    option_names[2][20] = {"Start", "Options"};
+static uint32_t selected_option;
+static uint32_t total_items = 2;
+static char     option_names[2][20] = {"Start", "Options"};
 
 static void render_menu(bool first_render){
    if(first_render){
@@ -32,8 +32,8 @@ static void render_menu(bool first_render){
    
    UG_SetForecolor(C_WHITE);//use white text
    
-   uint16_t y_offset = LIST_START_Y;
-   for(uint8_t count = 0; count < total_items; count++){
+   uint32_t y_offset = LIST_START_Y;
+   for(uint32_t count = 0; count < total_items; count++){
       if(count == selected_option){
          //draw special color
          UG_FillRoundFrame(LIST_START_X, y_offset, LIST_START_X + ENTRY_WIDTH - 1, y_offset + ENTRY_HEIGHT - 1, CORNER_RADIUS, SELECTOR_COLOR);

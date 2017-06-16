@@ -30,16 +30,35 @@ bool rotate_test(){
    
    vgpu.output.w = 16;
    vgpu.output.h = 16;
-   vgpu.output.angle = 95;//can be anything from 0 to 359
+   //vgpu.output.angle = 90;//can be anything from 0 to 359
+   vgpu.output.angle = 10;//can be anything from 0 to 359
    vgpu.output.data = dest;
    
-   rotate();
-   
-   texture output = {16, 16, dest};
-   
-   draw_texture(0, 0, output);
-   
-   wait_for_key_press(KEY_A);
+   while(1){
+      scanKeys();
+      uint16_t keys_buffered = keysDown();
+      if(keys_buffered & KEY_A){
+         break;
+      }
+      
+      uint16_t keys = ~(REG_KEYINPUT);
+      
+      if(keys & KEY_LEFT){
+         if(vgpu.output.angle == 0)vgpu.output.angle = 359;
+         else vgpu.output.angle--;
+      }
+      else if(keys & KEY_RIGHT){
+         if(vgpu.output.angle == 359)vgpu.output.angle = 0;
+         else vgpu.output.angle++;
+      }
+      
+      rotate();
+      
+      texture output = {16, 16, dest};
+      draw_texture(0, 0, output);
+      
+      VBlankIntrWait();
+   }
    
    return false;//no text to print
 }
@@ -94,14 +113,31 @@ bool scale_rot_test(){
    vgpu.output.angle = 37;//can be anything from 0 to 359
    vgpu.output.data = dest;
    
-   rotate();
-   
-   //draw
-   texture output = {65, 65, dest};
-   
-   draw_texture(0, 0, output);
-   
-   wait_for_key_press(KEY_A);
+   while(1){
+      scanKeys();
+      uint16_t keys_buffered = keysDown();
+      if(keys_buffered & KEY_A){
+         break;
+      }
+      
+      uint16_t keys = ~(REG_KEYINPUT);
+      
+      if(keys & KEY_LEFT){
+         if(vgpu.output.angle == 0)vgpu.output.angle = 359;
+         else vgpu.output.angle--;
+      }
+      else if(keys & KEY_RIGHT){
+         if(vgpu.output.angle == 359)vgpu.output.angle = 0;
+         else vgpu.output.angle++;
+      }
+      
+      rotate();
+      
+      texture output = {65, 65, dest};
+      draw_texture(0, 0, output);
+      
+      VBlankIntrWait();
+   }
    
    return false;//no text to print
 }
@@ -166,8 +202,8 @@ void run_tests(){
    UG_ConsolePutString("If you want debug data press A.\n\n");
    
    
-   uint16_t old_test_num = (uint16_t)-1;
-   uint16_t test_num = 0;
+   uint32_t old_test_num = (uint32_t)-1;
+   uint32_t test_num = 0;
    while(1){
       if(test_num != old_test_num){
          if(tests[test_num].test_func == NULL){
