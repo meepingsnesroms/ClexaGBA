@@ -63,6 +63,7 @@ void switch_to_menu(){
 
 void draw_menu(){
    bool update_window = false;
+   bool redraw_screen = false;
    uint16_t keys = keysDown();
    
    if(keys & KEY_UP){
@@ -102,14 +103,16 @@ void draw_menu(){
    if(keys & KEY_L){
       play_test();//audio test
       gba_printf("There are %d bunnys.", 32);
+      redraw_screen = true;
       update_window = true;
    }
    if(keys & KEY_R){
       run_tests();
+      redraw_screen = true;
       update_window = true;
    }
 
    if(update_window){
-      render_menu(false);
+      render_menu(redraw_screen);
    }
 }

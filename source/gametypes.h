@@ -17,8 +17,8 @@ typedef struct{
 }texture;
 
 typedef struct{
-   uint16_t x;//current x coord
-   uint16_t y;//current y coord
+   int16_t  x;//current x coord
+   int16_t  y;//current y coord
    uint16_t w;//width
    uint16_t h;//height
    struct{

@@ -19,24 +19,6 @@ void init_renderer(){
    }
 }
 
-#if 0
-void conv_32bpp_to_16(uint16_t* output, uint32_t* data, uint32_t size){
-   for(uint32_t cnt = 0; cnt < size; cnt++){
-      uint8_t visible = (data[cnt] >> 24) & 0xFF;
-      if(visible != 0){
-         uint8_t r = (data[cnt] >> 16) & 0xFF;
-         uint8_t g = (data[cnt] >> 8) & 0xFF;
-         uint8_t b = data[cnt] & 0xFF;
-         output[cnt] = RGB8(b,g,r) | 0x8000/*visible bit*/;
-      }
-      else{
-         //if invisible no need to calculate what shade of invisible :)
-         output[cnt] = 0x0000;
-      }
-   }
-}
-#endif
-
 void invert_color(uint16_t* data, uint32_t size){
    for(uint32_t cnt = 0; cnt < size; cnt++){
       //only modify visible pixels

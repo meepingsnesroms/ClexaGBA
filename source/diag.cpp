@@ -6,10 +6,112 @@
 #include <stdio.h>
 
 #include "ugui/ugui.h"
+#include "diag.h"
 
-#define LINES_AT_ONCE 5
 
-char printf_buffer[200];
+
+//test functions
+//headers required by the tests
+#include "gametypes.h"
+#include "speedhacks.h"
+#include "rendering.h"
+#include "gpumath.h"
+#include "assets.h"
+
+bool rotate_test(){
+   uint16_t source[16 * 16];
+   uint16_t dest[16 * 16];
+   
+   memcpy16(source, clarke_front_data, 16 * 16);
+   
+   vgpu.input.w = 16;
+   vgpu.input.h = 16;
+   vgpu.input.data = source;
+   
+   vgpu.output.w = 16;
+   vgpu.output.h = 16;
+   vgpu.output.angle = 95;//can be anything from 0 to 359
+   vgpu.output.data = dest;
+   
+   rotate();
+   
+   texture output = {16, 16, dest};
+   
+   draw_texture(0, 0, output);
+   
+   wait_for_key_press(KEY_A);
+   
+   return false;//no text to print
+}
+
+bool scale_test(){
+   uint16_t source[16 * 16];
+   uint16_t dest[65 * 65];
+   
+   memcpy16(source, clarke_front_data, 16 * 16);
+   
+   vgpu.input.w = 16;
+   vgpu.input.h = 16;
+   vgpu.input.data = source;
+   
+   vgpu.output.w = 65;
+   vgpu.output.h = 65;
+   vgpu.output.data = dest;
+   
+   scale();
+   
+   texture output = {65, 65, dest};
+   
+   draw_texture(0, 0, output);
+   
+   wait_for_key_press(KEY_A);
+   
+   return false;//no text to print
+}
+
+bool scale_rot_test(){
+   uint16_t source[65 * 65];
+   uint16_t dest[65 * 65];
+   
+   //scale
+   vgpu.input.w = 16;
+   vgpu.input.h = 16;
+   vgpu.input.data = clarke_front_data;
+   
+   vgpu.output.w = 65;
+   vgpu.output.h = 65;
+   vgpu.output.data = source;
+   
+   scale();
+   
+   //rotate
+   vgpu.input.w = 65;
+   vgpu.input.h = 65;
+   vgpu.input.data = source;
+   
+   vgpu.output.w = 65;
+   vgpu.output.h = 65;
+   vgpu.output.angle = 37;//can be anything from 0 to 359
+   vgpu.output.data = dest;
+   
+   rotate();
+   
+   //draw
+   texture output = {65, 65, dest};
+   
+   draw_texture(0, 0, output);
+   
+   wait_for_key_press(KEY_A);
+   
+   return false;//no text to print
+}
+
+//end of test functions
+
+
+
+diag_test tests[] = {{rotate_test, "Rotation Test\n"}, {scale_test, "Scaling Test\n"}, {scale_rot_test, "Scale And Rotate Test\n"}, {NULL, "butter flea"}};
+char test_result[200];//if a diag_test function returns true this will be printed
 
 static void reset_console(){
    UG_GUI* g = UG_CurrentGUI();
@@ -22,7 +124,21 @@ static void reset_console(){
    g->console.y_pos = g->console.y_end;
 }
 
+void wait_for_key_press(uint16_t key){
+   while(1){
+      scanKeys();
+      uint16_t keys = keysDown();
+      
+      if(keys & key){
+         break;
+      }
+      
+      VBlankIntrWait();
+   }
+}
+
 void gba_printf(char* str, ...){
+   static char printf_buffer[200];
    va_list argptr;
    va_start(argptr, str);
    vsprintf(printf_buffer, str, argptr);
@@ -34,17 +150,7 @@ void gba_printf(char* str, ...){
    
    UG_ConsolePutString(printf_buffer);
    
-   while(1){
-      scanKeys();
-      uint16_t keys = keysDown();
-      
-      //close message
-      if(keys & KEY_B){
-         break;
-      }
-      
-      VBlankIntrWait();
-   }
+   wait_for_key_press(KEY_B);
    
    //turn off the console
    reset_console();
@@ -59,7 +165,21 @@ void run_tests(){
    UG_ConsolePutString("If you dont know C++ press B now.\n");
    UG_ConsolePutString("If you want debug data press A.\n\n");
    
+   
+   uint16_t old_test_num = (uint16_t)-1;
+   uint16_t test_num = 0;
    while(1){
+      if(test_num != old_test_num){
+         if(tests[test_num].test_func == NULL){
+            //no more tests
+            break;
+         }
+         else{
+            UG_ConsolePutString(tests[test_num].name);//print next test name
+            old_test_num = test_num;
+         }
+      }
+      
       scanKeys();
       uint16_t keys = keysDown();
       
@@ -70,9 +190,12 @@ void run_tests(){
       
       //print next * lines
       if(keys & KEY_A){
+         bool print_test_result = tests[test_num].test_func();
+         if(print_test_result){
+            UG_ConsolePutString(test_result);
+         }
          
-         //todo: print debug data here
-         
+         test_num++;
       }
       
       VBlankIntrWait();

@@ -7,8 +7,6 @@
 
 #include "assets.h"
 
-#include "../data/crosshair.c.out"
-
 #include "uguishim.h"
 #include "inventory.h"
 #include "speedhacks.h"
@@ -183,11 +181,11 @@ void redraw_screen(){
 bool collision_inside(entity& chr1, entity& chr2){
    //this function tests if the center of obj1 is in the bounding box of obj2
    //or if the center of obj2 is in the bounding box of obj1
-   uint16_t mid_x_1 = chr1.x + (chr1.w / 2);
-   uint16_t mid_y_1 = chr1.y + (chr1.h / 2);
+   int16_t mid_x_1 = chr1.x + (chr1.w / 2);
+   int16_t mid_y_1 = chr1.y + (chr1.h / 2);
    
-   uint16_t mid_x_2 = chr2.x + (chr2.w / 2);
-   uint16_t mid_y_2 = chr2.y + (chr2.h / 2);
+   int16_t mid_x_2 = chr2.x + (chr2.w / 2);
+   int16_t mid_y_2 = chr2.y + (chr2.h / 2);
    
    if (chr1.x <= mid_x_2 &&
        chr1.x + chr1.w >= mid_x_2 &&
@@ -219,7 +217,7 @@ bool collision_touching(entity& chr1, entity& chr2){
    return false;
 }
 
-bool collision_test_point(entity& chr1, uint16_t x, uint16_t y){
+bool collision_test_point(entity& chr1, int16_t x, int16_t y){
    if (chr1.x <= x &&
        chr1.x + chr1.w >= x &&
        chr1.y <= y &&
@@ -387,8 +385,8 @@ void move_player(void* me){
    
    //quick version, works only if there are no deep concave objects
    if(this_ent.accel_x != 0 || this_ent.accel_y != 0){
-      uint16_t mid_x = this_ent.x + (this_ent.w / 2);
-      uint16_t mid_y = this_ent.y + (this_ent.h / 2);
+      int16_t mid_x = this_ent.x + (this_ent.w / 2);
+      int16_t mid_y = this_ent.y + (this_ent.h / 2);
       
       if(get_environ_data(mid_x + this_ent.accel_x, mid_y) == 0x00){
          this_ent.x += this_ent.accel_x;

@@ -12,7 +12,6 @@
 #include "diag.h"
 #include "speedhacks.h"
 
-//#include "../data/smallmiku.cdata"
 #include "../data/smallmiku_clean.cdata"
 
 //this file is based on the example from http://deku.gbadev.org/program/sound2.html
