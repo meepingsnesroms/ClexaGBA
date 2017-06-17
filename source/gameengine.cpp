@@ -13,6 +13,9 @@
 #include "gametypes.h"
 #include "rendering.h"
 #include "diag.h"
+#include "trig.h"
+
+#include "timer.h"
 
 //level testing
 #define MAX_LEVELS 20
@@ -31,26 +34,21 @@ level lvl2 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, &lvl_telepo
 
 //end of level testing
 
-static uint16_t keys;
 
-#define ENTITYS 20
+
+#define MAX_ENTITYS 20
 #define PLAYER characters[0]
 
+static level*   current_level;
+static entity   characters[MAX_ENTITYS];
+static uint8_t* enviroment_map;//map of terrain type
 
-uint16_t* bitmap_conv_ram;//[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t  crosshair[16 * 16];
-uint16_t  crosshair2[16 * 16];
-
-entity   characters[ENTITYS];
-uint8_t* enviroment_map;//map of terrain type
-int32_t  num_active_characters;
-
-level* current_level;
-
-bool have_nightblood;
+static uint16_t keys;
+static timer    play_time;
+static bool     have_nightblood;
 
 entity& get_avail_entity(){
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       if(!characters[cnt].active){
          characters[cnt].index = cnt;//keep the index current
          return characters[cnt];
@@ -145,7 +143,7 @@ bool crossed_border(entity& ent){
 }
 
 void render_entitys(){
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       if(characters[cnt].active){
          draw_entity(characters[cnt]);
       }
@@ -153,7 +151,7 @@ void render_entitys(){
 }
 
 void clear_dirty_entitys(){
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       if(characters[cnt].dirty.is_dirty){
          restore_background(characters[cnt]);
       }
@@ -172,7 +170,7 @@ void redraw_screen(){
    
    //draw entitys
    //the background was just drawn so there are no dirty segments left
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       characters[cnt].dirty.is_dirty = false;
    }
    render_entitys();
@@ -229,7 +227,7 @@ bool collision_test_point(entity& chr1, int32_t x, int32_t y){
 }
 
 void update_entitys(){
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       if(characters[cnt].active && characters[cnt].frame_iterate != NULL){
          characters[cnt].frame_iterate(&characters[cnt]);
       }
@@ -237,7 +235,7 @@ void update_entitys(){
 }
 
 bool intersects_solid(entity& test){
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       //if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_touching(test, characters[cnt])){
       if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_inside(test, characters[cnt])){
          return true;
@@ -286,7 +284,7 @@ void change_level(level* new_level, uint8_t direction){
    }
    
    //clear entitys
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       if(characters[cnt].kill_on_exit){
          characters[cnt].active = false;
       }
@@ -348,14 +346,83 @@ void item_collect(void* me){
    }
 }
 
+#ifdef USE_FLOATS
+
 void gun_crosshair(void* me){
    entity& this_ent = *((entity*)me);
    if(this_ent.angle != PLAYER.angle){
       //pick a direction to move
+      if(PLAYER.angle - this_ent.angle > -3 && PLAYER.angle - this_ent.angle < 3){
+         //if within 6 of target angle clamp to target
+         this_ent.angle = PLAYER.angle;
+      }
+      else if(PLAYER.angle == 270 && this_ent.angle < 90){
+         this_ent.angle -= 3;
+      }
+      else if(PLAYER.angle > this_ent.angle){
+         this_ent.angle += 3;
+      }
+      else if(PLAYER.angle == 0 && this_ent.angle > 180){
+         this_ent.angle += 3;
+      }
+      else if(PLAYER.angle < this_ent.angle){
+         this_ent.angle -= 3;
+      }
       
+      if(this_ent.angle < 0)this_ent.angle += 360;
+      if(this_ent.angle >= 360)this_ent.angle -= 360;
    }
    
+   int32_t player_mid_x = PLAYER.x + (PLAYER.w / 2);
+   int32_t player_mid_y = PLAYER.y + (PLAYER.h / 2);
+   
+   float circle_radius = 30.0;
+   float x_offset = circle_radius * cos_deg(this_ent.angle - 90);
+   float y_offset = circle_radius * sin_deg(this_ent.angle - 90);
+   
+   this_ent.x = x_offset + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
+   this_ent.y = y_offset + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
 }
+
+#else
+
+void gun_crosshair(void* me){
+   entity& this_ent = *((entity*)me);
+   if(this_ent.angle != PLAYER.angle){
+      //pick a direction to move
+      if(PLAYER.angle - this_ent.angle > -3 && PLAYER.angle - this_ent.angle < 3){
+         //if within 6 of target angle clamp to target
+         this_ent.angle = PLAYER.angle;
+      }
+      else if(PLAYER.angle == 270 && this_ent.angle < 90){
+         this_ent.angle -= 3;
+      }
+      else if(PLAYER.angle > this_ent.angle){
+         this_ent.angle += 3;
+      }
+      else if(PLAYER.angle == 0 && this_ent.angle > 180){
+         this_ent.angle += 3;
+      }
+      else if(PLAYER.angle < this_ent.angle){
+         this_ent.angle -= 3;
+      }
+      
+      if(this_ent.angle < 0)this_ent.angle += 360;
+      if(this_ent.angle >= 360)this_ent.angle -= 360;
+   }
+   
+   int32_t player_mid_x = PLAYER.x + (PLAYER.w / 2);
+   int32_t player_mid_y = PLAYER.y + (PLAYER.h / 2);
+   
+   fixedpt circle_radius = fixedpt_rconst(30.0);
+   fixedpt x_offset = fixedpt_mul(circle_radius, fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
+   fixedpt y_offset = fixedpt_mul(circle_radius, fixedpt_sin_deg(fixedpt_fromint(this_ent.angle - 90)));
+   
+   this_ent.x = fixedpt_toint(x_offset) + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
+   this_ent.y = fixedpt_toint(y_offset) + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
+}
+
+#endif
 
 void move_player(void* me){
    entity& this_ent = *((entity*)me);
@@ -365,32 +432,26 @@ void move_player(void* me){
       redraw_screen();//the item list corrupts the vram so a full redraw is needed
    }
    
-   
-   //debug only!
-   /*
-   if(keys & KEY_R){
-      have_nightblood = true;
-      update_health_bar();
-   }
-   */
-   
-   
    if(keys & KEY_LEFT){
       this_ent.accel_x--;
+      this_ent.angle = 270;
       this_ent.sprite.bitmap = clarke_left_data;
    }
    else if(keys & KEY_RIGHT){
       this_ent.accel_x++;
+      this_ent.angle = 90;
       this_ent.sprite.bitmap = clarke_right_data;
    }
    
    if(keys & KEY_UP){
       //cant fly
       this_ent.accel_y--;
+      this_ent.angle = 0;
       this_ent.sprite.bitmap = clarke_back_data;
    }
    else if(keys & KEY_DOWN){
       this_ent.accel_y++;
+      this_ent.angle = 180;
       this_ent.sprite.bitmap = clarke_front_data;
    }
    
@@ -417,36 +478,31 @@ void move_player(void* me){
 
 void init_game(){
    enviroment_map    = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
-   bitmap_conv_ram   = (uint16_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint16_t));
    
-   if(bitmap_conv_ram == NULL || enviroment_map == NULL){
+   if(enviroment_map == NULL){
       bsod("Not enough memory!");
    }
    
    //init music
    //not done yet
    
-   memcpy16(crosshair, crosshair_data, 16 * 16);
-   
-   //fired crosshair
-   memcpy(crosshair2, crosshair, 16 * 16 * sizeof(uint16_t));
-   invert_color(crosshair2, 16 * 16);
-   
-   for(int32_t cnt = 0; cnt < ENTITYS; cnt++){
+   for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
       reset_entity(characters[cnt]);
       characters[cnt].index = cnt;
    }
+   
+   
    
    //level testing
    for(int32_t cnt = 0; cnt < MAX_LEVELS; cnt++){
       level_nums[cnt] = NULL;
    }
    
-   //just for testing
    level_nums[0] = &lvl1;
    level_nums[1] = &lvl2;
    
    //end of level testing
+   
    
    
    //effects health bar rendering
@@ -464,6 +520,19 @@ void init_game(){
    PLAYER.sprite = {16, 16, clarke_front_data};
    PLAYER.frame_iterate = move_player;
    
+   entity& clarke_gun = get_avail_entity();
+   reset_entity(clarke_gun);
+   //clarke_gun.x = 0;
+   //clarke_gun.y = 0;
+   clarke_gun.w = 7;
+   clarke_gun.h = 7;
+   //clarke_gun.angle = 0;
+   clarke_gun.active = true;
+   clarke_gun.kill_on_exit = false;
+   clarke_gun.is_solid = false;
+   clarke_gun.sprite = {7, 7, smallcrosshair_data};
+   clarke_gun.frame_iterate = gun_crosshair;
+   
    reset_entity(lvl_teleporter_ent);
    lvl_teleporter_ent.x = 200;
    lvl_teleporter_ent.y = 80;
@@ -473,7 +542,7 @@ void init_game(){
    lvl_teleporter_ent.active = true;
    lvl_teleporter_ent.kill_on_exit = true;
    lvl_teleporter_ent.is_solid = false;
-   lvl_teleporter_ent.sprite = {16, 16, crosshair};
+   lvl_teleporter_ent.sprite = {16, 16, crosshair_data};
    lvl_teleporter_ent.frame_iterate = level_teleporter;
    
 }
@@ -488,9 +557,10 @@ void switch_to_game(){
 
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
-
+   
    update_entitys();
    clear_dirty_entitys();
    render_entitys();
    update_health_bar();
+   timer_tick(play_time);
 }

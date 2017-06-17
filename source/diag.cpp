@@ -213,11 +213,78 @@ bool orbit_test(){
    return false;//no text to print
 }
 
+bool orbit_test_nofloat(){
+   int32_t center_offset = 60;
+   
+   int32_t angle = 63;
+   int32_t angle_inc = 1;
+   fixedpt circle_size = fixedpt_rconst(40.0);
+   fixedpt x_offset;
+   fixedpt y_offset;
+   
+   //draw player at center
+   texture player = {16, 16, clarke_front_data};
+   draw_texture_from_midpoint(center_offset, center_offset, player);
+   
+   int32_t old_x;
+   int32_t old_y;
+   int32_t x;
+   int32_t y;
+   while(1){
+      scanKeys();
+      uint16_t keys_buffered = keysDown();
+      
+      if(keys_buffered & KEY_A){
+         //test is done
+         break;
+      }
+      
+      if(keys_buffered & KEY_UP){
+         if(angle_inc < 10)angle_inc++;
+      }
+      
+      if(keys_buffered & KEY_DOWN){
+         if(angle_inc > 1)angle_inc--;
+      }
+      
+      uint16_t keys = ~(REG_KEYINPUT);
+      
+      if(keys & KEY_LEFT){
+         angle -= angle_inc;
+         if(angle < 0)angle += 360;//angle -1 = 359
+      }
+      else if(keys & KEY_RIGHT){
+         angle += angle_inc;
+         if(angle >= 360)angle %= 360;
+      }
+      
+      x_offset = fixedpt_mul(circle_size, fixedpt_cos_deg(fixedpt_fromint(angle)));
+      y_offset = fixedpt_mul(circle_size, fixedpt_sin_deg(fixedpt_fromint(angle)));
+      
+      x = center_offset + fixedpt_toint(x_offset);
+      y = center_offset + fixedpt_toint(y_offset);
+      
+      if(x != old_x || y != old_y){
+         restore_background(old_x - 3, old_y - 3, 7, 7);
+         
+         texture output = {7, 7, smallcrosshair_data};
+         draw_texture_from_midpoint(x, y, output);
+         old_x = x;
+         old_y = y;
+      }
+      
+      VBlankIntrWait();
+   }
+   
+   return false;//no text to print
+}
+
 //end of test functions
 
 
 
-diag_test tests[] = {{rotate_test, "Rotation Test\n"}, {scale_test, "Scaling Test\n"}, {scale_rot_test, "Scale And Rotate Test\n"}, {orbit_test, "Orbit Test\n"},{NULL, "butter flea"}};
+diag_test tests[] = {{rotate_test, "Rotation Test\n"}, {scale_test, "Scaling Test\n"}, {scale_rot_test, "Scale And Rotate Test\n"},
+   {orbit_test, "Orbit Test\n"}, {orbit_test_nofloat, "Orbit Test Fixed Point\n"}, {NULL, "butter flea"}};
 char test_result[200];//if a diag_test function returns true this will be printed
 
 static void reset_console(){

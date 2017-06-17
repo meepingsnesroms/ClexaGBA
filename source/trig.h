@@ -1,6 +1,15 @@
 #pragma once
 
 #include <math.h>
+#include "fixedptc.h"
+
+inline fixedpt fixedpt_sin_deg(fixedpt angle){
+   return fixedpt_sin(fixedpt_div(fixedpt_mul(angle, FIXEDPT_PI), fixedpt_rconst(180.0)));
+}
+
+inline fixedpt fixedpt_cos_deg(fixedpt angle){
+   return fixedpt_cos(fixedpt_div(fixedpt_mul(angle, FIXEDPT_PI), fixedpt_rconst(180.0)));
+}
 
 inline double sin_deg(double angle){
    return sin(angle * M_PI / 180.0);
