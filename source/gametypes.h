@@ -17,6 +17,7 @@ typedef struct{
 }texture;
 
 typedef struct{
+   //variables
    int32_t  x;//current x coord
    int32_t  y;//current y coord
    int32_t  w;//width
@@ -39,6 +40,9 @@ typedef struct{
    int32_t sprite_x_offset;
    int32_t sprite_y_offset;
    texture sprite;
+   void*   data;//used if external data(such as a menu item) needs to be linked to this entity
+   
+   //callbacks
    void (*frame_iterate)(void* me);
 }entity;
 

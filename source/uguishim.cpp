@@ -31,7 +31,7 @@ UG_COLOR Frame_Colors[] =
    0x9D13,
 };
 
-static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
+static void gba_plot_pixel(UG_S16 x, UG_S16 y, UG_COLOR color){
    //gba has red and blue swapped, so it is actually bgr16
    uint16_t fixed = color >> 11;    //red
    fixed |= color << 10;            //blue
@@ -39,7 +39,7 @@ static void gba_plot_pixel(int16_t x, int16_t y, uint16_t color){
    vram[x + (y * SCREEN_WIDTH)] = fixed;
 }
 
-static UG_RESULT gba_fill_square(int16_t x, int16_t y, int16_t x2, int16_t y2, uint16_t color){
+static UG_RESULT gba_fill_square(UG_S16 x, UG_S16 y, UG_S16 x2, UG_S16 y2, UG_COLOR color){
    uint16_t fixed = 0;//gba has red and blue swapped
    fixed |= color >> 11;//red
    fixed |= color << 10;//blue

@@ -71,7 +71,6 @@ inline uint8_t get_environ_data(int32_t x, int32_t y){
 }
 
 void border_wall(){
-   //memset32(enviroment_map, 0x01010101, SCREEN_WIDTH / 4);
    for(int32_t cnt = 0; cnt < SCREEN_WIDTH; cnt++){
       set_environ_data(cnt, 0, 0x01);
       set_environ_data(cnt, SCREEN_HEIGHT - 1, 0x01);
@@ -100,10 +99,11 @@ void reset_entity(entity& ent){
    ent.bullet = false;
    ent.is_solid = false;
    ent.health = 100;
-   //ent.index  = -1;
+   //ent.index  = -1;//the index must remain valid for entitys in the characters array
    ent.sprite_x_offset = 0;
    ent.sprite_y_offset = 0;
    ent.sprite = {0, 0, NULL};
+   ent.data   = NULL;
    
    //callback
    ent.frame_iterate = NULL;
@@ -313,7 +313,6 @@ void level_teleporter(void* me){
    if(collision_touching(PLAYER, this_ent)){
       switch(this_ent.angle){
          case 0://up
-         case 360://up
             change_level(level_nums[current_level->north], DIR_UP);
             break;
             
@@ -337,14 +336,25 @@ void level_teleporter(void* me){
    }
 }
 
-void fire_gun(void* me){
+void item_collect(void* me){
    entity& this_ent = *((entity*)me);
    if(collision_inside(PLAYER, this_ent)){
-      this_ent.sprite.bitmap = crosshair2;
+      
+      //add item to inventory
+      add_item(*(item*)this_ent.data);
+      
+      //destroy the item entity
+      this_ent.active = false;
    }
-   else{
-      this_ent.sprite.bitmap = crosshair;
+}
+
+void gun_crosshair(void* me){
+   entity& this_ent = *((entity*)me);
+   if(this_ent.angle != PLAYER.angle){
+      //pick a direction to move
+      
    }
+   
 }
 
 void move_player(void* me){
@@ -357,10 +367,12 @@ void move_player(void* me){
    
    
    //debug only!
+   /*
    if(keys & KEY_R){
       have_nightblood = true;
       update_health_bar();
    }
+   */
    
    
    if(keys & KEY_LEFT){
@@ -401,70 +413,6 @@ void move_player(void* me){
       this_ent.accel_y = 0;
    }
    
-
-   
-#if 0
-   if(this_ent.accel_x > 0){
-      for(int32_t scoot = 0; scoot < this_ent.accel_x; scoot++){
-         if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y + this_ent.h / 2) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x + this_ent.w/* + 1*/, this_ent.y + this_ent.h - 1) != 0x00){
-            break;//cant walk into a wall
-         }
-         this_ent.x++;
-      }
-   }
-   else if(this_ent.accel_x < 0){
-      for(int32_t scoot = 0; scoot > this_ent.accel_x; scoot--){
-         if(get_environ_data(this_ent.x - 1, this_ent.y) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x - 1, this_ent.y + this_ent.h / 2) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x - 1, this_ent.y + this_ent.h - 1) != 0x00){
-            break;//cant walk into a wall
-         }
-         this_ent.x--;
-      }
-   }
-   this_ent.accel_x = 0;
-   
-   if(this_ent.accel_y > 0){
-      for(int32_t scoot = 0; scoot < this_ent.accel_y; scoot++){
-         if(get_environ_data(this_ent.x, this_ent.y + this_ent.h/* + 1*/) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x + this_ent.w / 2, this_ent.y + this_ent.h/* + 1*/) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x + this_ent.w - 1, this_ent.y + this_ent.h/* + 1*/) != 0x00){
-            break;//cant walk into a wall
-         }
-         this_ent.y++;
-      }
-   }
-   else if(this_ent.accel_y < 0){
-      for(int32_t scoot = 0; scoot > this_ent.accel_y; scoot--){
-         if(get_environ_data(this_ent.x, this_ent.y - 1) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x + this_ent.w / 2, this_ent.y - 1) != 0x00){
-            break;//cant walk into a wall
-         }
-         if(get_environ_data(this_ent.x + this_ent.w - 1, this_ent.y - 1) != 0x00){
-            break;//cant walk into a wall
-         }
-         this_ent.y--;
-      }
-   }
-   this_ent.accel_y = 0;
-#endif
-   
 }
 
 void init_game(){
@@ -489,7 +437,6 @@ void init_game(){
       characters[cnt].index = cnt;
    }
    
-   
    //level testing
    for(int32_t cnt = 0; cnt < MAX_LEVELS; cnt++){
       level_nums[cnt] = NULL;
@@ -511,44 +458,27 @@ void init_game(){
    PLAYER.h = 16 - 4;
    PLAYER.active = true;
    PLAYER.kill_on_exit = false;
-   PLAYER.index = 0;
+   //PLAYER.index = 0;
    PLAYER.sprite_x_offset = -2;
    PLAYER.sprite_y_offset = -2;
    PLAYER.sprite = {16, 16, clarke_front_data};
    PLAYER.frame_iterate = move_player;
-   
-   /*
-   entity& thing1 = get_avail_entity();
-   reset_entity(thing1);
-   thing1.x = 50;
-   thing1.y = 50;
-   thing1.w = 16;
-   thing1.h = 16;
-   thing1.active = true;
-   thing1.kill_on_exit = false;//temp, just for testing
-   thing1.is_solid = true;//just a test
-   thing1.index  = 1;
-   thing1.sprite = {16, 16, crosshair};
-   thing1.frame_iterate = fire_gun;
-   */
    
    reset_entity(lvl_teleporter_ent);
    lvl_teleporter_ent.x = 200;
    lvl_teleporter_ent.y = 80;
    lvl_teleporter_ent.w = 16;
    lvl_teleporter_ent.h = 16;
-   lvl_teleporter_ent.angle = 90;//determinse what level is telepoted to
+   lvl_teleporter_ent.angle = 90;//determines what level is telepoted to
    lvl_teleporter_ent.active = true;
    lvl_teleporter_ent.kill_on_exit = true;
    lvl_teleporter_ent.is_solid = false;
-   //lvl_teleporter_ent.index  = 1;
    lvl_teleporter_ent.sprite = {16, 16, crosshair};
    lvl_teleporter_ent.frame_iterate = level_teleporter;
    
 }
 
 void switch_to_game(){
-   
    //load first level
    change_level(&lvl1, DIR_NONE);
    
@@ -559,7 +489,6 @@ void switch_to_game(){
 void run_frame_game(){
    keys = ~(REG_KEYINPUT);
 
-   //test_collisions();
    update_entitys();
    clear_dirty_entitys();
    render_entitys();

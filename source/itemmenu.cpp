@@ -44,7 +44,7 @@ item* list_items(item* items, uint32_t total_items, bool exit_allowed){
    UG_WINDOW   window;
    UG_OBJECT   objects[MAX_LIST_SIZE];
    UG_TEXTBOX  text_entrys[MAX_LIST_SIZE];
-   uint32_t     active_item = 0;
+   uint32_t    active_item = 0;
    
    UG_WindowCreate(&window, objects, MAX_LIST_SIZE, message_cb);
    
