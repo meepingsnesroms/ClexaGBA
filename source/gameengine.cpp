@@ -46,6 +46,7 @@ static uint8_t* enviroment_map;//map of terrain type
 static uint16_t keys;
 static timer    play_time;
 static bool     have_nightblood;
+static bool     fire_pressed_last_frame;
 
 entity& get_avail_entity(){
    for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
@@ -346,10 +347,16 @@ void item_collect(void* me){
    }
 }
 
-#ifdef USE_FLOATS
+void move_bullet(void* me){
+   entity& this_ent = *((entity*)me);
+   
+   //not done yet
+   this_ent.active = false;//prevent entity overflow
+}
 
 void gun_crosshair(void* me){
    entity& this_ent = *((entity*)me);
+   
    if(this_ent.angle != PLAYER.angle){
       //pick a direction to move
       if(PLAYER.angle - this_ent.angle > -3 && PLAYER.angle - this_ent.angle < 3){
@@ -375,6 +382,8 @@ void gun_crosshair(void* me){
    
    int32_t player_mid_x = PLAYER.x + (PLAYER.w / 2);
    int32_t player_mid_y = PLAYER.y + (PLAYER.h / 2);
+   
+#ifdef USE_FLOATS
    
    float circle_radius = 30.0;
    float x_offset = circle_radius * cos_deg(this_ent.angle - 90);
@@ -382,37 +391,8 @@ void gun_crosshair(void* me){
    
    this_ent.x = x_offset + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
    this_ent.y = y_offset + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
-}
-
-#else
-
-void gun_crosshair(void* me){
-   entity& this_ent = *((entity*)me);
-   if(this_ent.angle != PLAYER.angle){
-      //pick a direction to move
-      if(PLAYER.angle - this_ent.angle > -3 && PLAYER.angle - this_ent.angle < 3){
-         //if within 6 of target angle clamp to target
-         this_ent.angle = PLAYER.angle;
-      }
-      else if(PLAYER.angle == 270 && this_ent.angle < 90){
-         this_ent.angle -= 3;
-      }
-      else if(PLAYER.angle > this_ent.angle){
-         this_ent.angle += 3;
-      }
-      else if(PLAYER.angle == 0 && this_ent.angle > 180){
-         this_ent.angle += 3;
-      }
-      else if(PLAYER.angle < this_ent.angle){
-         this_ent.angle -= 3;
-      }
-      
-      if(this_ent.angle < 0)this_ent.angle += 360;
-      if(this_ent.angle >= 360)this_ent.angle -= 360;
-   }
    
-   int32_t player_mid_x = PLAYER.x + (PLAYER.w / 2);
-   int32_t player_mid_y = PLAYER.y + (PLAYER.h / 2);
+#else
    
    fixedpt circle_radius = fixedpt_rconst(30.0);
    fixedpt x_offset = fixedpt_mul(circle_radius, fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
@@ -420,9 +400,23 @@ void gun_crosshair(void* me){
    
    this_ent.x = fixedpt_toint(x_offset) + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
    this_ent.y = fixedpt_toint(y_offset) + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
-}
-
+   
 #endif
+   
+   if(!fire_pressed_last_frame && (keys & KEY_B)){
+      entity& new_bullet = get_avail_entity();
+      reset_entity(new_bullet);
+      new_bullet.x = this_ent.x - 3;//- 3 makes it show at midpoint instead of top left corner
+      new_bullet.y = this_ent.y - 3;//- 3 makes it show at midpoint instead of top left corner
+      //new_bullet.w = 1;
+      //new_bullet.h = 1;
+      new_bullet.angle = this_ent.angle;
+      new_bullet.active = true;
+      new_bullet.kill_on_exit = true;
+      new_bullet.bullet = true;
+      new_bullet.frame_iterate = move_bullet;
+   }
+}
 
 void move_player(void* me){
    entity& this_ent = *((entity*)me);
@@ -508,6 +502,9 @@ void init_game(){
    //effects health bar rendering
    have_nightblood = false;
    
+   //prevents the gun from firing 60 rounds per second(the gun is a police pistol not AR-15!)
+   fire_pressed_last_frame = false;
+   
    PLAYER.x = SCREEN_WIDTH  / 2;
    PLAYER.y = SCREEN_HEIGHT / 2;
    PLAYER.w = 15 - 4;
@@ -544,7 +541,6 @@ void init_game(){
    lvl_teleporter_ent.is_solid = false;
    lvl_teleporter_ent.sprite = {16, 16, crosshair_data};
    lvl_teleporter_ent.frame_iterate = level_teleporter;
-   
 }
 
 void switch_to_game(){
@@ -563,4 +559,6 @@ void run_frame_game(){
    render_entitys();
    update_health_bar();
    timer_tick(play_time);
+   
+   fire_pressed_last_frame = (keys & KEY_B) ? true : false;
 }

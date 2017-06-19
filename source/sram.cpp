@@ -37,7 +37,7 @@ bool is_data_corrupt(){
    uint32_t compare = read_sram(SRAM_END - 3) << 24 | read_sram(SRAM_END - 2) << 16 | read_sram(SRAM_END - 1) << 8 | read_sram(SRAM_END - 0);
    
    if(compare == 'PASS'){
-      //the data is user edited, disable checksum
+      //the data is user authenticated, disable checksum
       return false;//data is from user, assume its valid
    }
    
