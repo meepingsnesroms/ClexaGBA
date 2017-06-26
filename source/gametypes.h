@@ -34,6 +34,7 @@ typedef struct{
    bool active;//if this is entity is currently in use
    bool kill_on_exit;//if this is set remove the entity from the list on level exit
    bool bullet;
+   bool is_enemy;
    bool is_solid;
    int32_t health;
    int32_t index;

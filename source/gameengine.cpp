@@ -14,7 +14,7 @@
 #include "rendering.h"
 #include "diag.h"
 #include "trig.h"
-
+#include "macro.h"
 #include "timer.h"
 
 //level testing
@@ -35,7 +35,7 @@ level lvl2 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, &lvl_telepo
 //end of level testing
 
 
-
+#define BULLET_SPEED 5
 #define MAX_ENTITYS 20
 #define PLAYER characters[0]
 
@@ -56,7 +56,7 @@ entity& get_avail_entity(){
       }
    }
    bsod("Entity overflow!");
-   return *(entity*)NULL;//this is for the compiler warning only, there is no coming back after bsod
+   return MAKE_NULL_OBJECT(entity);//this is for the compiler warning only, there is no coming back after bsod
 }
 
 inline void set_environ_data(int32_t x, int32_t y, uint8_t data){
@@ -96,6 +96,7 @@ void reset_entity(entity& ent){
    ent.active = false;
    ent.kill_on_exit = true;
    ent.bullet = false;
+   ent.is_enemy = false;
    ent.is_solid = false;
    ent.health = 100;
    //ent.index  = -1;//the index must remain valid for entitys in the characters array
@@ -307,7 +308,7 @@ void change_level(level* new_level, uint8_t direction){
 }
 
 void level_teleporter(void* me){
-   entity& this_ent = *((entity*)me);
+   entity& this_ent = REFERENCE_FROM_PTR(entity, me);
    
    if(collision_touching(PLAYER, this_ent)){
       switch(this_ent.angle){
@@ -336,11 +337,11 @@ void level_teleporter(void* me){
 }
 
 void item_collect(void* me){
-   entity& this_ent = *((entity*)me);
+   entity& this_ent = REFERENCE_FROM_PTR(entity, me);
    if(collision_inside(PLAYER, this_ent)){
       
       //add item to inventory
-      add_item(*(item*)this_ent.data);
+      add_item(REFERENCE_FROM_PTR(item, this_ent.data));
       
       //destroy the item entity
       this_ent.active = false;
@@ -348,14 +349,24 @@ void item_collect(void* me){
 }
 
 void move_bullet(void* me){
-   entity& this_ent = *((entity*)me);
+   entity& this_ent = REFERENCE_FROM_PTR(entity, me);
+   
+   //bullets use fixed point stored in existing x/y and accel_x/y varibles
+   fixedpt& bullet_x = AS_TYPE(fixedpt, this_ent.x);//*((fixedpt*)(&this_ent.x));
+   fixedpt& bullet_y = AS_TYPE(fixedpt, this_ent.y);//*((fixedpt*)(&this_ent.y));
+   
+   fixedpt& bullet_accel_x = AS_TYPE(fixedpt, this_ent.accel_x);//*((fixedpt*)(&this_ent.accel_x));
+   fixedpt& bullet_accel_y = AS_TYPE(fixedpt, this_ent.accel_y);//*((fixedpt*)(&this_ent.accel_y));
+   
+   bullet_x = fixedpt_add(bullet_x, bullet_accel_x);
+   bullet_y = fixedpt_add(bullet_y, bullet_accel_y);
    
    //not done yet
    this_ent.active = false;//prevent entity overflow
 }
 
 void gun_crosshair(void* me){
-   entity& this_ent = *((entity*)me);
+   entity& this_ent = REFERENCE_FROM_PTR(entity, me);
    
    if(this_ent.angle != PLAYER.angle){
       //pick a direction to move
@@ -383,7 +394,7 @@ void gun_crosshair(void* me){
    int32_t player_mid_x = PLAYER.x + (PLAYER.w / 2);
    int32_t player_mid_y = PLAYER.y + (PLAYER.h / 2);
    
-#ifdef USE_FLOATS
+#if 0//floats are too slow for gba due to lack of fpu //code left for reference
    
    float circle_radius = 30.0;
    float x_offset = circle_radius * cos_deg(this_ent.angle - 90);
@@ -392,7 +403,7 @@ void gun_crosshair(void* me){
    this_ent.x = x_offset + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
    this_ent.y = y_offset + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
    
-#else
+#endif
    
    fixedpt circle_radius = fixedpt_rconst(30.0);
    fixedpt x_offset = fixedpt_mul(circle_radius, fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
@@ -401,15 +412,22 @@ void gun_crosshair(void* me){
    this_ent.x = fixedpt_toint(x_offset) + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
    this_ent.y = fixedpt_toint(y_offset) + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
    
-#endif
-   
    if(!fire_pressed_last_frame && (keys & KEY_B)){
       entity& new_bullet = get_avail_entity();
       reset_entity(new_bullet);
-      new_bullet.x = this_ent.x - 3;//- 3 makes it show at midpoint instead of top left corner
-      new_bullet.y = this_ent.y - 3;//- 3 makes it show at midpoint instead of top left corner
+      
+      //use fixedpt for bullets
+      AS_TYPE(fixedpt, new_bullet.x) = fixedpt_fromint(this_ent.x - 3);
+      AS_TYPE(fixedpt, new_bullet.y) = fixedpt_fromint(this_ent.y - 3);
+      
+      //need to calculate these
+      AS_TYPE(fixedpt, new_bullet.accel_x) = fixedpt_fromint(0);
+      AS_TYPE(fixedpt, new_bullet.accel_y) = fixedpt_fromint(0);
+      
+      //bullets are always 1x1 in size
       //new_bullet.w = 1;
       //new_bullet.h = 1;
+      
       new_bullet.angle = this_ent.angle;
       new_bullet.active = true;
       new_bullet.kill_on_exit = true;
@@ -419,7 +437,7 @@ void gun_crosshair(void* me){
 }
 
 void move_player(void* me){
-   entity& this_ent = *((entity*)me);
+   entity& this_ent = REFERENCE_FROM_PTR(entity, me);
    
    if(keys & KEY_L){
       open_inventory();
@@ -471,7 +489,7 @@ void move_player(void* me){
 }
 
 void init_game(){
-   enviroment_map    = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+   enviroment_map = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
    
    if(enviroment_map == NULL){
       bsod("Not enough memory!");
@@ -511,7 +529,6 @@ void init_game(){
    PLAYER.h = 16 - 4;
    PLAYER.active = true;
    PLAYER.kill_on_exit = false;
-   //PLAYER.index = 0;
    PLAYER.sprite_x_offset = -2;
    PLAYER.sprite_y_offset = -2;
    PLAYER.sprite = {16, 16, clarke_front_data};
@@ -519,11 +536,10 @@ void init_game(){
    
    entity& clarke_gun = get_avail_entity();
    reset_entity(clarke_gun);
-   //clarke_gun.x = 0;
-   //clarke_gun.y = 0;
+   //x and y are set on first callback run
    clarke_gun.w = 7;
    clarke_gun.h = 7;
-   //clarke_gun.angle = 0;
+   //angle is set on first callback run
    clarke_gun.active = true;
    clarke_gun.kill_on_exit = false;
    clarke_gun.is_solid = false;

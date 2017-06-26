@@ -2,3 +2,7 @@
 http://www.coranac.com/tonc/text/affine.htm
 
 Thus uint16_t should be used only when required for hardware registers, pixel colors or data arrays.
+
+
+
+Floats are too slow for GBA due to lack of FPU.
