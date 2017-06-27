@@ -1,3 +1,5 @@
+//should only be included by "trig.h"!!!
+
 #ifndef _FIXEDPTC_H_
 #define _FIXEDPTC_H_
 

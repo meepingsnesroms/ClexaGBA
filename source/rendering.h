@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gba_video.h>
+
 #include "gametypes.h"
 
 extern uint16_t* vram;
@@ -21,3 +23,6 @@ void draw_texture_background(int32_t x, int32_t y, texture& tex);
 
 void draw_entity(entity& ent);
 void draw_entity_background(entity& ent);
+
+inline void plot_vram_pixel(int32_t x, int32_t y, uint16_t color){vram[x + (y * SCREEN_WIDTH)] = color;}
+inline void restore_background_pixel(int32_t x, int32_t y){vram[x + (y * SCREEN_WIDTH)] = background[x + (y * SCREEN_WIDTH)];}

@@ -35,7 +35,8 @@ level lvl2 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, &lvl_telepo
 //end of level testing
 
 
-#define BULLET_SPEED 5
+#define BULLET_SPEED 5.0
+#define BULLET_COLOR 0xFEFE
 #define MAX_ENTITYS 20
 #define PLAYER characters[0]
 
@@ -358,11 +359,26 @@ void move_bullet(void* me){
    fixedpt& bullet_accel_x = AS_TYPE(fixedpt, this_ent.accel_x);//*((fixedpt*)(&this_ent.accel_x));
    fixedpt& bullet_accel_y = AS_TYPE(fixedpt, this_ent.accel_y);//*((fixedpt*)(&this_ent.accel_y));
    
+   int32_t x_as_int = fixedpt_toint(bullet_x);
+   int32_t y_as_int = fixedpt_toint(bullet_y);
+   
+   //clear old bullet location
+   restore_background_pixel(x_as_int, y_as_int);
+   
    bullet_x = fixedpt_add(bullet_x, bullet_accel_x);
    bullet_y = fixedpt_add(bullet_y, bullet_accel_y);
+   x_as_int = fixedpt_toint(bullet_x);
+   y_as_int = fixedpt_toint(bullet_y);
    
-   //not done yet
-   this_ent.active = false;//prevent entity overflow
+   //test bullet validity
+   if(x_as_int < 0 || y_as_int < 0 || x_as_int > SCREEN_WIDTH - 1 || y_as_int > SCREEN_HEIGHT - 1){
+      //bullet invalid due to being off screen
+      this_ent.active = false;
+   }
+   else{
+      //redraw bullet
+      plot_vram_pixel(fixedpt_toint(bullet_x), fixedpt_toint(bullet_y), BULLET_COLOR);
+   }
 }
 
 void gun_crosshair(void* me){
@@ -420,9 +436,9 @@ void gun_crosshair(void* me){
       AS_TYPE(fixedpt, new_bullet.x) = fixedpt_fromint(this_ent.x - 3);
       AS_TYPE(fixedpt, new_bullet.y) = fixedpt_fromint(this_ent.y - 3);
       
-      //need to calculate these
-      AS_TYPE(fixedpt, new_bullet.accel_x) = fixedpt_fromint(0);
-      AS_TYPE(fixedpt, new_bullet.accel_y) = fixedpt_fromint(0);
+      //need to calculate these from angle
+      AS_TYPE(fixedpt, new_bullet.accel_x) = fixedpt_mul(fixedpt_rconst(BULLET_SPEED), fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
+      AS_TYPE(fixedpt, new_bullet.accel_y) = fixedpt_mul(fixedpt_rconst(BULLET_SPEED), fixedpt_sin_deg(fixedpt_fromint(this_ent.angle - 90)));
       
       //bullets are always 1x1 in size
       //new_bullet.w = 1;
