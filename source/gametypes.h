@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "trig.h"
+
 enum{
    DIR_NONE,
    DIR_UP,
@@ -18,19 +20,41 @@ typedef struct{
 
 typedef struct{
    //variables
-   int32_t  x;//current x coord
-   int32_t  y;//current y coord
+   
+   union{
+      //current x coord, bullets need fractional numbers due to use of sin and cos
+      int32_t  x;
+      fixedpt  fxd_x;
+   };
+   union{
+      //current y coord, bullets need fractional numbers due to use of sin and cos
+      int32_t  y;
+      fixedpt  fxd_y;
+   };
+   
    int32_t  w;//width
    int32_t  h;//height
+   
+   union{
+      //how far to move on x axis per frame, bullets need fractional numbers due to use of sin and cos
+      int32_t accel_x;
+      fixedpt fxd_accel_x;
+   };
+   union{
+      //how far to move on y axis per frame, bullets need fractional numbers due to use of sin and cos
+      int32_t accel_y;
+      fixedpt fxd_accel_y;
+   };
+   
+   int32_t angle;//degrees 0<->359
+   int32_t gravity;//negitive gravity sends you upward
+   
    struct{
       int32_t x;//x start of corrupted background
       int32_t y;//y start of corrupted background
       bool is_dirty;
    }dirty;
-   int32_t accel_x;//how far to move on x axis per frame -127<->126
-   int32_t accel_y;//how far to move on y axis per frame -127<->126
-   int32_t angle;//degrees 0<->359
-   int32_t gravity;//negitive gravity sends you upward
+   
    bool active;//if this is entity is currently in use
    bool kill_on_exit;//if this is set remove the entity from the list on level exit
    bool bullet;

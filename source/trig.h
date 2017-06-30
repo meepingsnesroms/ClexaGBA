@@ -1,6 +1,11 @@
 #pragma once
 
 #include <math.h>
+
+//config settings for fixed point library, using 16.16 fixed point numbers
+#define FIXEDPT_BITS	 32
+#define FIXEDPT_WBITS 16
+
 #include "fixedptc.h"
 
 inline fixedpt fixedpt_sin_deg(fixedpt angle){

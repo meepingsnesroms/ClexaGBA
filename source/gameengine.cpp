@@ -35,7 +35,7 @@ level lvl2 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, &lvl_telepo
 //end of level testing
 
 
-#define BULLET_SPEED 5.0
+#define BULLET_SPEED 3.0
 #define BULLET_COLOR 0xFEFE
 #define MAX_ENTITYS 20
 #define PLAYER characters[0]
@@ -147,7 +147,7 @@ bool crossed_border(entity& ent){
 
 void render_entitys(){
    for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
-      if(characters[cnt].active){
+      if(characters[cnt].active && characters[cnt].sprite.bitmap != NULL){
          draw_entity(characters[cnt]);
       }
    }
@@ -353,22 +353,14 @@ void move_bullet(void* me){
    entity& this_ent = REFERENCE_FROM_PTR(entity, me);
    
    //bullets use fixed point stored in existing x/y and accel_x/y varibles
-   fixedpt& bullet_x = AS_TYPE(fixedpt, this_ent.x);//*((fixedpt*)(&this_ent.x));
-   fixedpt& bullet_y = AS_TYPE(fixedpt, this_ent.y);//*((fixedpt*)(&this_ent.y));
    
-   fixedpt& bullet_accel_x = AS_TYPE(fixedpt, this_ent.accel_x);//*((fixedpt*)(&this_ent.accel_x));
-   fixedpt& bullet_accel_y = AS_TYPE(fixedpt, this_ent.accel_y);//*((fixedpt*)(&this_ent.accel_y));
+   restore_background_pixel(this_ent.dirty.x, this_ent.dirty.y);
    
-   int32_t x_as_int = fixedpt_toint(bullet_x);
-   int32_t y_as_int = fixedpt_toint(bullet_y);
+   this_ent.fxd_x = fixedpt_add(this_ent.fxd_x, this_ent.fxd_accel_x);
+   this_ent.fxd_y = fixedpt_add(this_ent.fxd_y, this_ent.fxd_accel_y);
    
-   //clear old bullet location
-   restore_background_pixel(x_as_int, y_as_int);
-   
-   bullet_x = fixedpt_add(bullet_x, bullet_accel_x);
-   bullet_y = fixedpt_add(bullet_y, bullet_accel_y);
-   x_as_int = fixedpt_toint(bullet_x);
-   y_as_int = fixedpt_toint(bullet_y);
+   int32_t x_as_int = fixedpt_toint(this_ent.fxd_x);
+   int32_t y_as_int = fixedpt_toint(this_ent.fxd_y);
    
    //test bullet validity
    if(x_as_int < 0 || y_as_int < 0 || x_as_int > SCREEN_WIDTH - 1 || y_as_int > SCREEN_HEIGHT - 1){
@@ -377,7 +369,9 @@ void move_bullet(void* me){
    }
    else{
       //redraw bullet
-      plot_vram_pixel(fixedpt_toint(bullet_x), fixedpt_toint(bullet_y), BULLET_COLOR);
+      plot_vram_pixel(x_as_int, y_as_int, BULLET_COLOR);
+      this_ent.dirty.x = x_as_int;
+      this_ent.dirty.y = y_as_int;
    }
 }
 
@@ -421,29 +415,32 @@ void gun_crosshair(void* me){
    
 #endif
    
-   fixedpt circle_radius = fixedpt_rconst(30.0);
+   fixedpt circle_radius = fixedpt_rconst(20.0);
    fixedpt x_offset = fixedpt_mul(circle_radius, fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
    fixedpt y_offset = fixedpt_mul(circle_radius, fixedpt_sin_deg(fixedpt_fromint(this_ent.angle - 90)));
    
-   this_ent.x = fixedpt_toint(x_offset) + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
-   this_ent.y = fixedpt_toint(y_offset) + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
+   this_ent.x = fixedpt_toint(x_offset) + player_mid_x;
+   this_ent.y = fixedpt_toint(y_offset) + player_mid_y;
    
    if(!fire_pressed_last_frame && (keys & KEY_B)){
       entity& new_bullet = get_avail_entity();
       reset_entity(new_bullet);
       
       //use fixedpt for bullets
-      AS_TYPE(fixedpt, new_bullet.x) = fixedpt_fromint(this_ent.x - 3);
-      AS_TYPE(fixedpt, new_bullet.y) = fixedpt_fromint(this_ent.y - 3);
+      new_bullet.fxd_x = fixedpt_fromint((this_ent.x + player_mid_x) / 2);//half way between player and crosshair
+      new_bullet.fxd_y = fixedpt_fromint((this_ent.y + player_mid_y) / 2);//half way between player and crosshair
       
       //need to calculate these from angle
-      AS_TYPE(fixedpt, new_bullet.accel_x) = fixedpt_mul(fixedpt_rconst(BULLET_SPEED), fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
-      AS_TYPE(fixedpt, new_bullet.accel_y) = fixedpt_mul(fixedpt_rconst(BULLET_SPEED), fixedpt_sin_deg(fixedpt_fromint(this_ent.angle - 90)));
+      new_bullet.fxd_accel_x = fixedpt_mul(fixedpt_rconst(BULLET_SPEED), fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
+      new_bullet.fxd_accel_y = fixedpt_mul(fixedpt_rconst(BULLET_SPEED), fixedpt_sin_deg(fixedpt_fromint(this_ent.angle - 90)));
       
       //bullets are always 1x1 in size
       //new_bullet.w = 1;
       //new_bullet.h = 1;
       
+      //new_bullet.dirty.x = this_ent.x;
+      //new_bullet.dirty.y = this_ent.y;
+      new_bullet.dirty.is_dirty = false;//the dirty.x/y are used but should not be cleared by the clear_dirty_entitys() routine
       new_bullet.angle = this_ent.angle;
       new_bullet.active = true;
       new_bullet.kill_on_exit = true;
@@ -559,6 +556,8 @@ void init_game(){
    clarke_gun.active = true;
    clarke_gun.kill_on_exit = false;
    clarke_gun.is_solid = false;
+   clarke_gun.sprite_x_offset = -3;
+   clarke_gun.sprite_y_offset = -3;
    clarke_gun.sprite = {7, 7, smallcrosshair_data};
    clarke_gun.frame_iterate = gun_crosshair;
    

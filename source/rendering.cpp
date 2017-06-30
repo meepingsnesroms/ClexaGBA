@@ -66,7 +66,7 @@ void restore_background(int32_t x, int32_t y, int32_t w, int32_t h){
 }
 
 void restore_background(entity& ent){
-   if(!ent.dirty.is_dirty)return;
+   //if(!ent.dirty.is_dirty)return;
    
    int32_t clip_x = ent.dirty.x;
    int32_t clip_y = ent.dirty.y;
@@ -96,7 +96,7 @@ void restore_background(entity& ent){
 }
 
 void draw_texture(int32_t x, int32_t y, texture& tex){
-   if(tex.bitmap == NULL)return;
+   //if(tex.bitmap == NULL)return;
 
    if(x < 0 || y < 0 || x + tex.w >= SCREEN_WIDTH || y + tex.h >= SCREEN_HEIGHT){
       //if offscreen rendering, use this safe function
@@ -129,7 +129,7 @@ void draw_texture_from_midpoint(int32_t x, int32_t y, texture& tex){
 }
 
 void draw_texture_background(int32_t x, int32_t y, texture& tex){
-   if(tex.bitmap == NULL)return;
+   //if(tex.bitmap == NULL)return;
    for(int32_t yinc = 0; yinc < tex.h; yinc++){
       for(int32_t xinc = 0; xinc < tex.w; xinc++){
          //check "is visible" bit
