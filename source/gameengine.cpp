@@ -16,6 +16,7 @@
 #include "trig.h"
 #include "macro.h"
 #include "timer.h"
+#include "rng.h"
 
 //level testing
 #define MAX_LEVELS 20
@@ -26,15 +27,20 @@
 
 level* level_nums[MAX_LEVELS];
 
-entity lvl_teleporter_ent;
+#define TEST_ENTITYS 2
+
+entity level_test_entitys[TEST_ENTITYS];
 
 //level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, NULL/*sprites*/, 0/*num_sprites*/, title_screen_data/*background*/, level1_data/*foreground*/};
-level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 1/*east*/, 0/*west*/, &lvl_teleporter_ent/*sprites*/, 1/*num_sprites*/, title_screen_data/*background*/, leveltest_data/*foreground*/};
-level lvl2 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, &lvl_teleporter_ent/*sprites*/, 1/*num_sprites*/, title_screen_data/*background*/, level2_data/*foreground*/};
+level lvl1 = {0/*id*/, 0/*north*/, 0/*south*/, 1/*east*/, 0/*west*/, level_test_entitys/*sprites*/, TEST_ENTITYS/*num_sprites*/, title_screen_data/*background*/, leveltest_data/*foreground*/};
+level lvl2 = {0/*id*/, 0/*north*/, 0/*south*/, 0/*east*/, 0/*west*/, level_test_entitys/*sprites*/, TEST_ENTITYS/*num_sprites*/, title_screen_data/*background*/, level2_data/*foreground*/};
 
 //end of level testing
 
-
+#define ASTROID_SPAWN_PROBABILITY 10 //probability is 1/ASTROID_SPAWN_PROBABILITY
+#define ASTEROID_SPEED 2.0
+#define MAX_ASTEROIDS 5
+#define CROSSHAIR_DISTANCE 20.0
 #define BULLET_SPEED 3.0
 #define BULLET_COLOR 0xFEFE
 #define MAX_ENTITYS 20
@@ -47,6 +53,7 @@ static uint8_t* enviroment_map;//map of terrain type
 static uint16_t keys;
 static timer    play_time;
 static bool     have_nightblood;
+static int32_t  active_asteroids;
 static bool     fire_pressed_last_frame;
 
 entity& get_avail_entity(){
@@ -61,13 +68,11 @@ entity& get_avail_entity(){
 }
 
 inline void set_environ_data(int32_t x, int32_t y, uint8_t data){
-   int32_t offset = y * SCREEN_WIDTH + x;
-   enviroment_map[offset] = data;
+   enviroment_map[y * SCREEN_WIDTH + x] = data;
 }
 
 inline uint8_t get_environ_data(int32_t x, int32_t y){
-   int32_t offset = y * SCREEN_WIDTH + x;
-   return enviroment_map[offset];
+   return enviroment_map[y * SCREEN_WIDTH + x];
 }
 
 void border_wall(){
@@ -96,7 +101,7 @@ void reset_entity(entity& ent){
    ent.gravity = 0;
    ent.active = false;
    ent.kill_on_exit = true;
-   ent.bullet = false;
+   ent.use_fixedpt = false;
    ent.is_enemy = false;
    ent.is_solid = false;
    ent.health = 100;
@@ -108,20 +113,6 @@ void reset_entity(entity& ent){
    
    //callback
    ent.frame_iterate = NULL;
-}
-
-unsigned int cust_rand(){
-   static unsigned int z1 = 12345, z2 = 12345, z3 = 12345, z4 = 12345;
-   unsigned int b;
-   b  = ((z1 << 6) ^ z1) >> 13;
-   z1 = ((z1 & 4294967294U) << 18) ^ b;
-   b  = ((z2 << 2) ^ z2) >> 27;
-   z2 = ((z2 & 4294967288U) << 2) ^ b;
-   b  = ((z3 << 13) ^ z3) >> 21;
-   z3 = ((z3 & 4294967280U) << 7) ^ b;
-   b  = ((z4 << 3) ^ z4) >> 12;
-   z4 = ((z4 & 4294967168U) << 13) ^ b;
-   return (z1 ^ z2 ^ z3 ^ z4);
 }
 
 void conv_16bpp_to_terrain(uint8_t* output, uint16_t* data, uint32_t size){
@@ -239,7 +230,6 @@ void update_entitys(){
 
 bool intersects_solid(entity& test){
    for(int32_t cnt = 0; cnt < MAX_ENTITYS; cnt++){
-      //if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_touching(test, characters[cnt])){
       if(cnt != test.index/*prevent collide with self*/ && characters[cnt].active && characters[cnt].is_solid && collision_inside(test, characters[cnt])){
          return true;
       }
@@ -404,18 +394,7 @@ void gun_crosshair(void* me){
    int32_t player_mid_x = PLAYER.x + (PLAYER.w / 2);
    int32_t player_mid_y = PLAYER.y + (PLAYER.h / 2);
    
-#if 0//floats are too slow for gba due to lack of fpu //code left for reference
-   
-   float circle_radius = 30.0;
-   float x_offset = circle_radius * cos_deg(this_ent.angle - 90);
-   float y_offset = circle_radius * sin_deg(this_ent.angle - 90);
-   
-   this_ent.x = x_offset + player_mid_x - 3;//- 3 makes it show at midpoint instead of top left corner
-   this_ent.y = y_offset + player_mid_y - 3;//- 3 makes it show at midpoint instead of top left corner
-   
-#endif
-   
-   fixedpt circle_radius = fixedpt_rconst(20.0);
+   fixedpt circle_radius = fixedpt_rconst(CROSSHAIR_DISTANCE);
    fixedpt x_offset = fixedpt_mul(circle_radius, fixedpt_cos_deg(fixedpt_fromint(this_ent.angle - 90)));
    fixedpt y_offset = fixedpt_mul(circle_radius, fixedpt_sin_deg(fixedpt_fromint(this_ent.angle - 90)));
    
@@ -438,14 +417,76 @@ void gun_crosshair(void* me){
       //new_bullet.w = 1;
       //new_bullet.h = 1;
       
-      //new_bullet.dirty.x = this_ent.x;
-      //new_bullet.dirty.y = this_ent.y;
+      //new_bullet.dirty.x = 0;//set by reset_entity(new_bullet);
+      //new_bullet.dirty.y = 0;//set by reset_entity(new_bullet);
       new_bullet.dirty.is_dirty = false;//the dirty.x/y are used but should not be cleared by the clear_dirty_entitys() routine
       new_bullet.angle = this_ent.angle;
       new_bullet.active = true;
       new_bullet.kill_on_exit = true;
-      new_bullet.bullet = true;
+      new_bullet.use_fixedpt = true;
       new_bullet.frame_iterate = move_bullet;
+   }
+}
+
+void move_asteroid(void* me){
+   //uses fixedpt
+   entity& this_ent = REFERENCE_FROM_PTR(entity, me);
+   
+   //asteroids use fixed point stored in existing x/y and accel_x/y varibles
+   
+   //restore_background_pixel(this_ent.dirty.x, this_ent.dirty.y);
+   
+   this_ent.fxd_x = fixedpt_add(this_ent.fxd_x, this_ent.fxd_accel_x);
+   this_ent.fxd_y = fixedpt_add(this_ent.fxd_y, this_ent.fxd_accel_y);
+   
+   int32_t x_as_int = fixedpt_toint(this_ent.fxd_x);
+   int32_t y_as_int = fixedpt_toint(this_ent.fxd_y);
+   
+   //test asteroid validity
+   if(x_as_int < 0 || y_as_int < 0 || x_as_int > SCREEN_WIDTH - 1 || y_as_int > SCREEN_HEIGHT - 1){
+      //asteroid invalid due to being off screen
+      this_ent.active = false;
+      active_asteroids--;
+   }
+   /*
+   else{
+      //redraw asteroid
+      plot_vram_pixel(x_as_int, y_as_int, BULLET_COLOR);
+      this_ent.dirty.x = x_as_int;
+      this_ent.dirty.y = y_as_int;
+   }
+   */
+}
+
+void asteroid_spawner(void* me){
+   bool spawn_asteroid = ((rng_rand() % ASTROID_SPAWN_PROBABILITY) == 1);
+   
+   if(spawn_asteroid && active_asteroids < MAX_ASTEROIDS){
+      int32_t x_coord   = rng_rand() % SCREEN_WIDTH;
+      int32_t rnd_angle = (rng_rand() % 180) + 90;
+      
+      entity& new_asteroid = get_avail_entity();
+      reset_entity(new_asteroid);
+      
+      //use fixedpt for asteroids
+      new_asteroid.fxd_x = fixedpt_fromint(x_coord);
+      new_asteroid.fxd_y = fixedpt_fromint(0);//y is always 0 because asteroids come from above
+      
+      //need to calculate these from angle
+      new_asteroid.fxd_accel_x = fixedpt_mul(fixedpt_rconst(ASTEROID_SPEED), fixedpt_cos_deg(fixedpt_fromint(rnd_angle - 90)));
+      new_asteroid.fxd_accel_y = fixedpt_mul(fixedpt_rconst(ASTEROID_SPEED), fixedpt_sin_deg(fixedpt_fromint(rnd_angle - 90)));
+      
+      new_asteroid.w = 16;
+      new_asteroid.h = 16;
+      
+      new_asteroid.angle = rnd_angle;
+      new_asteroid.active = true;
+      new_asteroid.kill_on_exit = true;
+      new_asteroid.use_fixedpt = true;
+      new_asteroid.sprite = rock_tex;
+      new_asteroid.frame_iterate = move_asteroid;
+      
+      active_asteroids++;
    }
 }
 
@@ -501,6 +542,20 @@ void move_player(void* me){
    
 }
 
+static void clear_globals(){
+   //effects health bar rendering
+   have_nightblood = false;
+   
+   //prevents the gun from firing 60 rounds per second(the gun is a police pistol not AR-15!)
+   fire_pressed_last_frame = false;
+   
+   //asteroids on screen
+   active_asteroids = 0;
+   
+   //game timer
+   timer_reset(&play_time);
+}
+
 void init_game(){
    enviroment_map = (uint8_t*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
    
@@ -530,11 +585,7 @@ void init_game(){
    
    
    
-   //effects health bar rendering
-   have_nightblood = false;
-   
-   //prevents the gun from firing 60 rounds per second(the gun is a police pistol not AR-15!)
-   fire_pressed_last_frame = false;
+   clear_globals();
    
    PLAYER.x = SCREEN_WIDTH  / 2;
    PLAYER.y = SCREEN_HEIGHT / 2;
@@ -561,17 +612,23 @@ void init_game(){
    clarke_gun.sprite = {7, 7, smallcrosshair_data};
    clarke_gun.frame_iterate = gun_crosshair;
    
-   reset_entity(lvl_teleporter_ent);
-   lvl_teleporter_ent.x = 200;
-   lvl_teleporter_ent.y = 80;
-   lvl_teleporter_ent.w = 16;
-   lvl_teleporter_ent.h = 16;
-   lvl_teleporter_ent.angle = 90;//determines what level is telepoted to
-   lvl_teleporter_ent.active = true;
-   lvl_teleporter_ent.kill_on_exit = true;
-   lvl_teleporter_ent.is_solid = false;
-   lvl_teleporter_ent.sprite = {16, 16, crosshair_data};
-   lvl_teleporter_ent.frame_iterate = level_teleporter;
+   //level teleporter test
+   reset_entity(level_test_entitys[0]);
+   level_test_entitys[0].x = 200;
+   level_test_entitys[0].y = 80;
+   level_test_entitys[0].w = 16;
+   level_test_entitys[0].h = 16;
+   level_test_entitys[0].angle = 90;//determines what level is telepoted to
+   level_test_entitys[0].active = true;
+   level_test_entitys[0].kill_on_exit = true;
+   level_test_entitys[0].is_solid = false;
+   level_test_entitys[0].sprite = {16, 16, crosshair_data};
+   level_test_entitys[0].frame_iterate = level_teleporter;
+   
+   //asteroid spawning test
+   reset_entity(level_test_entitys[1]);
+   level_test_entitys[1].frame_iterate = asteroid_spawner;
+   level_test_entitys[1].active = true;
 }
 
 void switch_to_game(){
@@ -589,7 +646,7 @@ void run_frame_game(){
    clear_dirty_entitys();
    render_entitys();
    update_health_bar();
-   timer_tick(play_time);
+   timer_tick(&play_time);
    
    fire_pressed_last_frame = (keys & KEY_B) ? true : false;
 }

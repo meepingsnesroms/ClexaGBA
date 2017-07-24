@@ -10,4 +10,5 @@ typedef struct{
    uint32_t frames;
 }timer;
 
-void timer_tick(timer& timer_to_tick);
+void timer_reset(timer* timer_to_clear);
+void timer_tick(timer* timer_to_tick);

@@ -6,6 +6,9 @@
 #include "uguishim.h"
 #include "gametypes.h"
 #include "speedhacks.h"
+#include "trig.h"
+
+//#define REMOVE_TRANSPARENT_ON_BLIT //and 0x7FFF to remove the transparent bit from colors before writing to framebuffer
 
 uint16_t* vram = ((uint16_t*)VRAM);
 uint16_t* background;//[SCREEN_WIDTH * SCREEN_HEIGHT];
@@ -66,7 +69,7 @@ void restore_background(int32_t x, int32_t y, int32_t w, int32_t h){
 }
 
 void restore_background(entity& ent){
-   //if(!ent.dirty.is_dirty)return;
+   //no need for fixedpt check since this function only uses the ent.dirty.x/y not the ent.x/y that can be stored as fixedpt
    
    int32_t clip_x = ent.dirty.x;
    int32_t clip_y = ent.dirty.y;
@@ -96,16 +99,18 @@ void restore_background(entity& ent){
 }
 
 void draw_texture(int32_t x, int32_t y, texture& tex){
-   //if(tex.bitmap == NULL)return;
-
    if(x < 0 || y < 0 || x + tex.w >= SCREEN_WIDTH || y + tex.h >= SCREEN_HEIGHT){
-      //if offscreen rendering, use this safe function
+      //offscreen rendering, use this safe function
       for(int32_t yinc = 0; yinc < tex.h; yinc++){
          for(int32_t xinc = 0; xinc < tex.w; xinc++){
             //check "is visible" bit
             uint16_t color = tex.bitmap[xinc + (yinc * tex.w)];
             if(color & 0x8000 && x + xinc > -1 && y + yinc > -1 && x + xinc < SCREEN_WIDTH && y + yinc < SCREEN_HEIGHT){
+#ifdef REMOVE_TRANSPARENT_ON_BLIT
                vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
+#else
+               vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color;//ent.bitmap[xinc + (yinc * ent.w)];
+#endif
             }
          }
       }
@@ -117,7 +122,11 @@ void draw_texture(int32_t x, int32_t y, texture& tex){
             //check "is visible" bit
             uint16_t color = tex.bitmap[xinc + (yinc * tex.w)];
             if(color & 0x8000){
+#ifdef REMOVE_TRANSPARENT_ON_BLIT
                vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
+#else
+               vram[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color;//ent.bitmap[xinc + (yinc * ent.w)];
+#endif
             }
          }
       }
@@ -129,25 +138,56 @@ void draw_texture_from_midpoint(int32_t x, int32_t y, texture& tex){
 }
 
 void draw_texture_background(int32_t x, int32_t y, texture& tex){
-   //if(tex.bitmap == NULL)return;
    for(int32_t yinc = 0; yinc < tex.h; yinc++){
       for(int32_t xinc = 0; xinc < tex.w; xinc++){
          //check "is visible" bit
          uint16_t color = tex.bitmap[xinc + (yinc * tex.w)];
          if(color & 0x8000){
+#ifdef REMOVE_TRANSPARENT_ON_BLIT
             background[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color & 0x7FFF;//ent.bitmap[xinc + (yinc * ent.w)];
+#else
+            background[x + xinc + ((y + yinc) * SCREEN_WIDTH)] = color;//ent.bitmap[xinc + (yinc * ent.w)];
+#endif
          }
       }
    }
 }
 
 void draw_entity(entity& ent){
-   draw_texture(ent.x + ent.sprite_x_offset, ent.y + ent.sprite_y_offset, ent.sprite);
-   ent.dirty.x = ent.x + ent.sprite_x_offset;
-   ent.dirty.y = ent.y + ent.sprite_y_offset;
+   int32_t clean_x;
+   int32_t clean_y;
+   
+   if(!ent.use_fixedpt){
+      //normal
+      clean_x = ent.x;
+      clean_y = ent.y;
+   }
+   else{
+      //fixed point
+      clean_x = fixedpt_toint(ent.fxd_x);
+      clean_y = fixedpt_toint(ent.fxd_y);
+   }
+   
+   draw_texture(clean_x + ent.sprite_x_offset, clean_y + ent.sprite_y_offset, ent.sprite);
+   ent.dirty.x = clean_x + ent.sprite_x_offset;
+   ent.dirty.y = clean_y + ent.sprite_y_offset;
    ent.dirty.is_dirty = true;
 }
 
 void draw_entity_background(entity& ent){
-   draw_texture_background(ent.x + ent.sprite_x_offset, ent.y + ent.sprite_y_offset, ent.sprite);
+   int32_t clean_x;
+   int32_t clean_y;
+   
+   if(!ent.use_fixedpt){
+      //normal
+      clean_x = ent.x;
+      clean_y = ent.y;
+   }
+   else{
+      //fixed point
+      clean_x = fixedpt_toint(ent.fxd_x);
+      clean_y = fixedpt_toint(ent.fxd_y);
+   }
+   
+   draw_texture_background(clean_x + ent.sprite_x_offset, clean_y + ent.sprite_y_offset, ent.sprite);
 }
