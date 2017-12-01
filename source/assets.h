@@ -21,5 +21,6 @@ extern uint16_t flame_data[];
 extern uint16_t title_screen_data[];
 
 extern texture  rock_tex;
+extern texture  bullet_tex;
 
 //levels

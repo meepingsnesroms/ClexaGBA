@@ -44,3 +44,6 @@ const uint16_t rock_tex_bmp[16 * 16] = {
 };
 
 texture rock_tex = {16, 16, (uint16_t*)rock_tex_bmp};
+
+uint16_t bullet_color = 0xFEFE;
+texture bullet_tex = {1, 1, &bullet_color};

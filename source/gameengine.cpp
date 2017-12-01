@@ -420,6 +420,7 @@ void gun_crosshair(void* me){
       //new_bullet.dirty.x = 0;//set by reset_entity(new_bullet);
       //new_bullet.dirty.y = 0;//set by reset_entity(new_bullet);
       new_bullet.dirty.is_dirty = false;//the dirty.x/y are used but should not be cleared by the clear_dirty_entitys() routine
+      //new_bullet.sprite = bullet_tex;
       new_bullet.angle = this_ent.angle;
       new_bullet.active = true;
       new_bullet.kill_on_exit = true;
@@ -434,8 +435,6 @@ void move_asteroid(void* me){
    
    //asteroids use fixed point stored in existing x/y and accel_x/y varibles
    
-   //restore_background_pixel(this_ent.dirty.x, this_ent.dirty.y);
-   
    this_ent.fxd_x = fixedpt_add(this_ent.fxd_x, this_ent.fxd_accel_x);
    this_ent.fxd_y = fixedpt_add(this_ent.fxd_y, this_ent.fxd_accel_y);
    
@@ -448,14 +447,6 @@ void move_asteroid(void* me){
       this_ent.active = false;
       active_asteroids--;
    }
-   /*
-   else{
-      //redraw asteroid
-      plot_vram_pixel(x_as_int, y_as_int, BULLET_COLOR);
-      this_ent.dirty.x = x_as_int;
-      this_ent.dirty.y = y_as_int;
-   }
-   */
 }
 
 void asteroid_spawner(void* me){
@@ -463,7 +454,8 @@ void asteroid_spawner(void* me){
    
    if(spawn_asteroid && active_asteroids < MAX_ASTEROIDS){
       int32_t x_coord   = rng_rand() % SCREEN_WIDTH;
-      int32_t rnd_angle = (rng_rand() % 180) + 90;
+      //int32_t rnd_angle = (rng_rand() % 180) + 90;
+      int32_t rnd_angle = (rng_rand() % 90) + 90 + 45;
       
       entity& new_asteroid = get_avail_entity();
       reset_entity(new_asteroid);
